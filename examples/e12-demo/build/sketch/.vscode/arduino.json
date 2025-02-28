@@ -1,0 +1,15 @@
+#line 1 "D:\\work\\e12-io\\e12-firmware-esp32\\lib\\e12-protocol\\examples\\e12-demo\\.vscode\\arduino.json"
+{
+    "board": "rp2040:rp2040:rpipico",
+    "port": "COM51",
+    "sketch": "e12-demo.ino",
+    "programmer": "avrisp",
+    "output": "./build",
+    "buildPreferences": [
+        [
+            "build.extra_flags",
+            "-D__AVR_ATmega2560__"
+        ]
+    ],
+    "configuration": "flash=2097152_0,freq=133,opt=Small,rtti=Disabled,stackprotect=Disabled,exceptions=Disabled,dbgport=Disabled,dbglvl=None,usbstack=picosdk,ipbtstack=ipv4only,uploadmethod=default"
+}

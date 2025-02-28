@@ -1,0 +1,19 @@
+{
+    "name": "e12_protocol",
+    "version": "0.0.1",
+    "description": "e12 protocol spec",
+    "keywords": "",
+    "dependencies": {},
+    "frameworks": "*",
+    "platforms": "espressif32",
+    "build": {
+        "srcDir": ".",
+        "flags": [
+            "-I./src",
+            "-I./esp32",
+            "-DESP32_E12_SPEC"
+        ],
+        "includeDir": "./src",
+        "srcFilter": "+<*> -<src/arduino>"
+    }
+}
