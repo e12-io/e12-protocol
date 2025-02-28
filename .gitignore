@@ -1,0 +1,4 @@
+.vscode
+build
+examples\e12-demo\build
+examples\e12-demo\.vscode
