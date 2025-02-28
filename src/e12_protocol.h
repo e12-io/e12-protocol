@@ -1,3 +1,8 @@
+/*
+  e12_protocol.h - on wire protocol spec for e12 protocol to talk to e12 node.
+  for more information see e12.io/docs
+  Created by Devesh Kothari, Feb 28, 2025.
+*/
 #ifndef H_E12_SPEC
 #define H_E12_SPEC
 

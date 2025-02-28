@@ -1,4 +1,4 @@
-#include "esp32_e12_node_spec.h"
+#include "esp32_e12_node_protocol.h"
 
 #include <esp_log.h>
 
