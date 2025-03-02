@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2023 e12.io
+ * All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef H_E12_SPEC
 #define H_E12_SPEC
 
@@ -227,48 +245,181 @@ typedef struct __attribute__((packed, aligned(4))) e12_device {
   e12_log_evt_t log;
 } e12_device_t;
 
+/**
+ * @class e12
+ * @brief This class represents the base class for the e12 protocol.
+ *
+ * The e12 class provides methods for encoding and decoding packets,
+ * managing device state, handling communication, and performing utility
+ * functions. It serves as the base class for specific implementations
+ * like e12_esp32_node.
+ */
 class e12 {
  private:
-  uint32_t _vid;
-  uint32_t _pid;
-  uint32_t _version;
-  e12_node_state_t _status;
+  uint32_t _vid;             ///< Vendor ID
+  uint32_t _pid;             ///< Product ID
+  uint32_t _version;         ///< Version of the e12 protocol
+  e12_node_state_t _status;  ///< Status of the e12 node
 
-  e12_onwire_t _encode_buf;
-  e12_onwire_t _decode_buf;
-  e12_device_t* _dev_ptr;
+  e12_onwire_t _encode_buf;  ///< Buffer for encoding packets
+  e12_onwire_t _decode_buf;  ///< Buffer for decoding packets
+  e12_device_t* _dev_ptr;    ///< Pointer to the e12 device
 
  protected:
-  uint32_t _timeout;
-  uint8_t _seq;
+  uint32_t _timeout;  ///< Timeout value in milliseconds
+  uint8_t _seq;       ///< Sequence number for packets
+
+  /**
+   * @brief Gets the buffer for encoding packets.
+   * @return Pointer to the encoding buffer
+   */
   e12_onwire_t* get_encode_buffer() { return &_encode_buf; }
+
+  /**
+   * @brief Gets the buffer for decoding packets.
+   * @return Pointer to the decoding buffer
+   */
   e12_onwire_t* get_decode_buffer() { return &_decode_buf; }
+
+  /**
+   * @brief Flushes the given buffer.
+   * @param buf Pointer to the buffer to be flushed
+   */
   void flush_buffer(e12_onwire_t* buf);
 
  public:
+  /**
+   * @brief Constructor for the e12 class.
+   * @param vid Vendor ID
+   * @param pid Product ID
+   */
   e12(uint32_t vid, uint32_t pid);
+
+  /**
+   * @brief Destructor for the e12 class.
+   */
   ~e12();
+
+  // Packet handling
+
+  /**
+   * @brief Gets a new packet for the e12 protocol.
+   * @return Pointer to the new packet
+   */
   e12_packet_t* e12_get_packet();
+
+  /**
+   * @brief Encodes the given data into a packet.
+   * @param data Pointer to the data to be encoded
+   * @return Pointer to the encoded packet
+   */
   e12_onwire_t* encode(e12_packet_t* data);
+
+  /**
+   * @brief Decodes the given data into a packet.
+   * @param pkt Pointer to the packet to be decoded
+   * @param data Data to be decoded
+   * @return Pointer to the decoded packet
+   */
   e12_packet_t* decode(e12_onwire_t* pkt, uint8_t data);
+
+  // Device management
+
+  /**
+   * @brief Sets the e12 device.
+   * @param p Pointer to the e12 device
+   */
   void set_e12_device(e12_device_t* p) { _dev_ptr = p; }
-  bool get_message(e12_packet_t* data);
-  void set_timeout(uint32_t ms) { _timeout = ms; };
-  bool is_configured() { return _status.CONFIGURED; }
-  uint32_t get_version() { return _version; }
-  void set_version(uint32_t v) { _version = v; }
-  void set_node_properties(e12_node_properties_t* props);
+
+  /**
+   * @brief Sets the product information.
+   * @param vid Vendor ID
+   * @param pid Product ID
+   */
   void set_product_info(uint32_t vid, uint32_t pid) {
     _vid = vid;
     _pid = pid;
   }
 
+  /**
+   * @brief Sets the properties of the e12 node.
+   * @param props Pointer to the node properties
+   */
+  void set_node_properties(e12_node_properties_t* props);
+
+  /**
+   * @brief Sets the timeout value.
+   * @param ms Timeout value in milliseconds
+   */
+  void set_timeout(uint32_t ms) { _timeout = ms; }
+
+  /**
+   * @brief Checks if the e12 node is configured.
+   * @return True if the node is configured, false otherwise
+   */
+  bool is_configured() { return _status.CONFIGURED; }
+
+  /**
+   * @brief Gets the version of the e12 protocol.
+   * @return Version of the e12 protocol
+   */
+  uint32_t get_version() { return _version; }
+
+  /**
+   * @brief Sets the version of the e12 protocol.
+   * @param v Version to be set
+   */
+  void set_version(uint32_t v) { _version = v; }
+
+  // Communication
+
+  /**
+   * @brief Gets a request packet for the given command.
+   * @param cmd Command to be requested
+   * @param response True if a response is expected, false otherwise
+   * @param data Pointer to additional data
+   * @return Pointer to the request packet
+   */
   virtual e12_packet_t* get_request(e12_cmd_t cmd, bool response = true,
                                     void* data = 0);
+
+  /**
+   * @brief Gets a response packet for the given packet.
+   * @param p Pointer to the packet
+   * @return Pointer to the response packet
+   */
   virtual e12_packet_t* get_response(e12_packet_t* p);
-  virtual int print_buffer(e12_onwire_t* buf) { return 0; };
+
+  /**
+   * @brief Gets a message from the e12 protocol.
+   * @param data Pointer to the data to be retrieved
+   * @return True if the message was retrieved, false otherwise
+   */
+  bool get_message(e12_packet_t* data);
+
+  /**
+   * @brief Handles the received packet.
+   * @param p Pointer to the received packet
+   * @return 0 on success, non-zero on failure
+   */
   virtual int on_receive(e12_packet_t* p);
-  virtual int wakeup_e12() { return 0; };
+
+  /**
+   * @brief Wakes up the e12 node.
+   * @return 0 on success, non-zero on failure
+   */
+  virtual int wakeup_e12() { return 0; }
+
+  // Utility
+
+  /**
+   * @brief Prints the contents of the buffer.
+   * @param buf Pointer to the buffer
+   * @return 0 on success, non-zero on failure
+   */
+  virtual int print_buffer(e12_onwire_t* buf) { return 0; }
+
+  // Pure virtual functions to be implemented by derived classes
 
   virtual int begin(void* bus, uint8_t e12_addr = 0) = 0;
   virtual uint32_t get_time_ms() = 0;
@@ -276,14 +427,13 @@ class e12 {
   virtual uint8_t get_checksum(const char* data, uint8_t len) = 0;
   virtual int send(e12_packet_t* buf) = 0;
   virtual e12_packet_t* read() = 0;
-
   virtual int sleep(uint32_t ms, void* data) = 0;
   virtual int log(uint8_t type, uint8_t status, uint32_t ts, void* data) = 0;
-
   virtual int on_wakeup() = 0;
   virtual int set_node_auth_credentials(e12_auth_data_t* auth) = 0;
   virtual int on_config(const char* s, int len) = 0;
   virtual int on_get_state(char* s, int len, void* ctx) = 0;
   virtual int on_restore_state(const char* s, int len) = 0;
 };
+
 #endif

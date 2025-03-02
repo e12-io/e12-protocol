@@ -32,6 +32,7 @@ int e12_arduino::close() {
 }
 
 uint32_t e12_arduino::get_time_ms() { return millis(); }
+
 int e12_arduino::set_node_auth_credentials(e12_auth_data_t* auth) {
   if (!auth) return -1;
   send(get_request(e12_cmd_t::CMD_AUTH, true, (void*)auth));
@@ -78,7 +79,10 @@ int e12_arduino::send(e12_packet_t* buf) {
   Serial.println("");
 #endif
   _bus->write(req->buf, req->head.len);
-  _bus->endTransmission();
+  if (_bus->endTransmission() != 0) {
+    // Handle transmission error
+    return -1;
+  }
   return req->head.len;
 }
 
@@ -94,9 +98,9 @@ e12_packet_t* e12_arduino::read() {
   while (_bus->available()) {
     uint8_t c = _bus->read();
 #if DEBUG
-    Serial.print((unsigned byte)c);
+    Serial.print((uint8_t)c);
 #endif
-    if ((p = decode(f, (uint8_t)c))) {
+    if ((p = decode(f, c))) {
       while (_bus->available()) _bus->read();
       return p;
     }
@@ -105,6 +109,7 @@ e12_packet_t* e12_arduino::read() {
 }
 
 uint8_t e12_arduino::get_checksum(const char* data, uint8_t len) { return 0; }
+
 void e12_arduino::e12_run() {
   if (!is_configured()) {
     send(get_request(e12_cmd_t::CMD_CONFIG));
