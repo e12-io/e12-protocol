@@ -118,15 +118,16 @@ $(function(){initNavTree('e12__protocol_8h.html',''); initResizable(true); });
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classe12.html">e12</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class represents the base class for the <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> protocol.  <a href="classe12.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a1c5ade066488343c91e66c727011c67c" id="r_a1c5ade066488343c91e66c727011c67c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c5ade066488343c91e66c727011c67c">E12_MAX_PKT_SIZE</a>&#160;&#160;&#160;128</td></tr>
-<tr class="memdesc:a1c5ade066488343c91e66c727011c67c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html">e12</a> on wire max packet size  <br /></td></tr>
+<tr class="memdesc:a1c5ade066488343c91e66c727011c67c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> on wire max packet size  <br /></td></tr>
 <tr class="separator:a1c5ade066488343c91e66c727011c67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4160130771e7b65b36b77fe8dcb5c599" id="r_a4160130771e7b65b36b77fe8dcb5c599"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4160130771e7b65b36b77fe8dcb5c599">E12_MAX_DATA_PAYLOAD</a>&#160;&#160;&#160;(<a class="el" href="#a1c5ade066488343c91e66c727011c67c">E12_MAX_PKT_SIZE</a> - sizeof(<a class="el" href="#ae53fa1f3b64e12d485dd5843f7ce3574">e12_onwire_head_t</a>) - 8)</td></tr>
-<tr class="memdesc:a4160130771e7b65b36b77fe8dcb5c599"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html">e12</a> max payload size in bytes in a <a class="el" href="classe12.html">e12</a> packet  <br /></td></tr>
+<tr class="memdesc:a4160130771e7b65b36b77fe8dcb5c599"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> max payload size in bytes in a <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> packet  <br /></td></tr>
 <tr class="separator:a4160130771e7b65b36b77fe8dcb5c599"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5860470a1ea501cf68539d7e624b85d2" id="r_a5860470a1ea501cf68539d7e624b85d2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5860470a1ea501cf68539d7e624b85d2">E12_MAX_LOG_BUFFERS</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a5860470a1ea501cf68539d7e624b85d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,7 +167,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="#a4565158c297d8a63df29ff5e2043150ba48a089f9d85ae91783ed46051bf658ba">CMD_DEBUG_BLINK</a>
 <br />
  }</td></tr>
-<tr class="memdesc:a4565158c297d8a63df29ff5e2043150b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html">e12</a> commands  <a href="#a4565158c297d8a63df29ff5e2043150b">More...</a><br /></td></tr>
+<tr class="memdesc:a4565158c297d8a63df29ff5e2043150b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> commands  <a href="#a4565158c297d8a63df29ff5e2043150b">More...</a><br /></td></tr>
 <tr class="separator:a4565158c297d8a63df29ff5e2043150b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e3fbc97cdc117e1f9d85f56360d79d0" id="r_a6e3fbc97cdc117e1f9d85f56360d79d0"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6e3fbc97cdc117e1f9d85f56360d79d0">e12_evt_status_t</a> : uint8_t { <a class="el" href="#a6e3fbc97cdc117e1f9d85f56360d79d0aa47942e45c355b9bd1f9a6139ac41ca5">STATUS_DONE</a> = 0
 , <a class="el" href="#a6e3fbc97cdc117e1f9d85f56360d79d0a9b3b17e4b559f537f9a520ca888d9e58">STATUS_NEW</a>
@@ -277,7 +278,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classe12.html">e12</a> max payload size in bytes in a <a class="el" href="classe12.html">e12</a> packet </p>
+<p><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> max payload size in bytes in a <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> packet </p>
 
 </div>
 </div>
@@ -307,7 +308,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classe12.html">e12</a> on wire max packet size </p>
+<p><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> on wire max packet size </p>
 
 </div>
 </div>
@@ -388,7 +389,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classe12.html">e12</a> commands </p>
+<p><a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> commands </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150bab50339a10e1de285ac99d4c3990b8693" name="a4565158c297d8a63df29ff5e2043150bab50339a10e1de285ac99d4c3990b8693"></a>NONE&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba2ff66134f94aa0726b6baceee5add9ee" name="a4565158c297d8a63df29ff5e2043150ba2ff66134f94aa0726b6baceee5add9ee"></a>CMD_PING&#160;</td><td class="fielddoc"><p>typical ping cmd. responded with a "pong" string </p>
@@ -397,21 +398,21 @@ Variables</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba75c9063e78002603bd29eb29cd984420" name="a4565158c297d8a63df29ff5e2043150ba75c9063e78002603bd29eb29cd984420"></a>CMD_CONFIG&#160;</td><td class="fielddoc"><p>used to request vendor specific configuration </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba622aedec1fc58bc4bd211cd1f14846d8" name="a4565158c297d8a63df29ff5e2043150ba622aedec1fc58bc4bd211cd1f14846d8"></a>CMD_STATE&#160;</td><td class="fielddoc"><p>used to either send or request vendor state from <a class="el" href="classe12.html">e12</a> node </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba622aedec1fc58bc4bd211cd1f14846d8" name="a4565158c297d8a63df29ff5e2043150ba622aedec1fc58bc4bd211cd1f14846d8"></a>CMD_STATE&#160;</td><td class="fielddoc"><p>used to either send or request vendor state from <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150bae2660eba41eda0ce6a9bf4a4adedb4aa" name="a4565158c297d8a63df29ff5e2043150bae2660eba41eda0ce6a9bf4a4adedb4aa"></a>CMD_STATUS&#160;</td><td class="fielddoc"><p>asked to query the <a class="el" href="classe12.html">e12</a> node for various status information </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150bae2660eba41eda0ce6a9bf4a4adedb4aa" name="a4565158c297d8a63df29ff5e2043150bae2660eba41eda0ce6a9bf4a4adedb4aa"></a>CMD_STATUS&#160;</td><td class="fielddoc"><p>asked to query the <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node for various status information </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba736ea57fbfd2b2ed89a382aaa70aebc8" name="a4565158c297d8a63df29ff5e2043150ba736ea57fbfd2b2ed89a382aaa70aebc8"></a>CMD_LOG&#160;</td><td class="fielddoc"><p>used to log a vendor event to <a class="el" href="classe12.html">e12</a> node for store and forward </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba736ea57fbfd2b2ed89a382aaa70aebc8" name="a4565158c297d8a63df29ff5e2043150ba736ea57fbfd2b2ed89a382aaa70aebc8"></a>CMD_LOG&#160;</td><td class="fielddoc"><p>used to log a vendor event to <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node for store and forward </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba6c08be9ad86ea7eac272248bb62090ae" name="a4565158c297d8a63df29ff5e2043150ba6c08be9ad86ea7eac272248bb62090ae"></a>CMD_TIME&#160;</td><td class="fielddoc"><p>request current time in ms from <a class="el" href="classe12.html">e12</a> node </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba6c08be9ad86ea7eac272248bb62090ae" name="a4565158c297d8a63df29ff5e2043150ba6c08be9ad86ea7eac272248bb62090ae"></a>CMD_TIME&#160;</td><td class="fielddoc"><p>request current time in ms from <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150baf7d4b7b656809d5e10ba353005f8c2bd" name="a4565158c297d8a63df29ff5e2043150baf7d4b7b656809d5e10ba353005f8c2bd"></a>CMD_WAKE_ME_UP&#160;</td><td class="fielddoc"><p>request <a class="el" href="classe12.html">e12</a> node to wake vendor mcu after certain ms </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150baf7d4b7b656809d5e10ba353005f8c2bd" name="a4565158c297d8a63df29ff5e2043150baf7d4b7b656809d5e10ba353005f8c2bd"></a>CMD_WAKE_ME_UP&#160;</td><td class="fielddoc"><p>request <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node to wake vendor mcu after certain ms </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150bab29bb64064f5638e5b4d8868c1ab99db" name="a4565158c297d8a63df29ff5e2043150bab29bb64064f5638e5b4d8868c1ab99db"></a>CMD_OTA&#160;</td><td class="fielddoc"><p>request initiation of OTA [currently not implemented] </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba8f2b9356cb4073be739a2202349e07c6" name="a4565158c297d8a63df29ff5e2043150ba8f2b9356cb4073be739a2202349e07c6"></a>CMD_SET_NODE_PROPERTIES&#160;</td><td class="fielddoc"><p>set various <a class="el" href="classe12.html">e12</a> node properties e.g logmask, activating captive portal etc </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba8f2b9356cb4073be739a2202349e07c6" name="a4565158c297d8a63df29ff5e2043150ba8f2b9356cb4073be739a2202349e07c6"></a>CMD_SET_NODE_PROPERTIES&#160;</td><td class="fielddoc"><p>set various <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node properties e.g logmask, activating captive portal etc </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba48a089f9d85ae91783ed46051bf658ba" name="a4565158c297d8a63df29ff5e2043150ba48a089f9d85ae91783ed46051bf658ba"></a>CMD_DEBUG_BLINK&#160;</td><td class="fielddoc"><p>initiate a debug blink of led on <a class="el" href="classe12.html">e12</a> node </p>
+<tr><td class="fieldname"><a id="a4565158c297d8a63df29ff5e2043150ba48a089f9d85ae91783ed46051bf658ba" name="a4565158c297d8a63df29ff5e2043150ba48a089f9d85ae91783ed46051bf658ba"></a>CMD_DEBUG_BLINK&#160;</td><td class="fielddoc"><p>initiate a debug blink of led on <a class="el" href="classe12.html" title="This class represents the base class for the e12 protocol.">e12</a> node </p>
 </td></tr>
 </table>
 
