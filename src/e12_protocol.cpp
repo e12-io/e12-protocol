@@ -150,7 +150,9 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
 bool e12::get_message(e12_packet_t* data) {
   e12_onwire_t* pkt = get_decode_buffer();
   if (!memcpy(data, &pkt->data, sizeof(e12_packet_t))) {
+#if ESP32_E12_SPEC
     ESP_LOGE(TAG, "Failed to copy message data");
+#endif
     return false;
   }
   return true;
@@ -164,7 +166,9 @@ bool e12::get_message(e12_packet_t* data) {
 void e12::flush_buffer(e12_onwire_t* buf) {
   if (buf) {
     memset(buf, 0, sizeof(e12_onwire_t));
+#if ESP32_E12_SPEC
     ESP_LOGI(TAG, "Buffer flushed");
+#endif
   }
 }
 
@@ -179,7 +183,9 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
 
   e12_packet_t* resp = e12_get_packet();
   if (!resp) {
+#if ESP32_E12_SPEC
     ESP_LOGE(TAG, "Failed to get response packet");
+#endif
     return NULL;
   }
   resp->msg.head.seq = p->msg.head.seq;
@@ -197,7 +203,9 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
     case e12_cmd_t::CMD_CONFIG: {
       resp->msg.head.len = sizeof(_dev_ptr->config);
       if (!memcpy(resp->msg.data, &_dev_ptr->config, resp->msg.head.len)) {
+#if ESP32_E12_SPEC
         ESP_LOGE(TAG, "Failed to copy config data");
+#endif
         return NULL;
       }
     } break;
@@ -205,7 +213,9 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
       e12_data_t* state = (e12_data_t*)p->msg.data;
       if (state->FETCH) {
         if (!memcpy(resp->msg.data, &_dev_ptr->state, sizeof(e12_data_t))) {
+#if ESP32_E12_SPEC
           ESP_LOGE(TAG, "Failed to copy state data");
+#endif
           return NULL;
         }
         state = (e12_data_t*)resp->msg.data;
