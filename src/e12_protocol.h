@@ -54,7 +54,9 @@ enum class e12_cmd_t : uint8_t {
   /// request current time in ms from e12 node
   CMD_TIME,
   /// request e12 node to wake vendor mcu after certain ms
-  CMD_WAKE_ME_UP,
+  CMD_SCHEDULE_WAKEUP,
+  /// typically sent by e12 node intending to go to sleep
+  CMD_NODE_SLEEP,
   /// request initiation of OTA [currently not implemented]
   CMD_OTA,
   /// set various e12 node properties e.g logmask,
@@ -199,6 +201,10 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
     e12_header_t head;
     uint32_t ms;
   } msg_wakeup;
+  struct {
+    e12_header_t head;
+    uint32_t ms;
+  } msg_sleep;
   struct {
     e12_header_t head;
     e12_debug_blink_t data;

@@ -68,7 +68,7 @@ int process_command(const char* cmd) {
     case 8:
       return E12_NODE_TRANSMIT;
     case 9:
-      return E12_WAKE_ME_UP;
+      return E12_SCHEDULE_WAKEUP;
     case 10:
       return E12_NODE_WAKEUP;
     case 11:

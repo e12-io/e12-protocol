@@ -52,7 +52,7 @@ int e12_arduino::sleep(uint32_t ms, void* data) {
     Serial.println("Sending WAKE ME UP --->");
     e12_wakeup_data_t wakeup = {0};
     wakeup.ms = ms;
-    send(get_request(e12_cmd_t::CMD_WAKE_ME_UP, true, (void*)&wakeup));
+    send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
     if (!read()) {
       wakeup_e12();
       return -1;

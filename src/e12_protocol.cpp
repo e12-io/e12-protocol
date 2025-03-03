@@ -114,7 +114,13 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       p->msg.head.len = sizeof(e12_log_evt_t);
       memcpy(p->msg.data, data, p->msg.head.len);
     } break;
-    case e12_cmd_t::CMD_WAKE_ME_UP: {
+    case e12_cmd_t::CMD_NODE_SLEEP: {
+      // this is actually not response but request
+      // TODO : fix the architecture a bit here
+      p->msg_sleep.ms = *(uint32_t*)data;
+      p->msg.head.len = sizeof(uint32_t);
+    } break;
+    case e12_cmd_t::CMD_SCHEDULE_WAKEUP: {
       e12_wakeup_data_t* wakeup = (e12_wakeup_data_t*)data;
       p->msg_wakeup.ms = wakeup->ms;
       p->msg.head.len = sizeof(uint32_t);
@@ -215,6 +221,8 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
     case e12_cmd_t::CMD_TIME: {
       resp->msg_time.ms = get_time_ms();
       resp->msg.head.len = sizeof(uint32_t);
+    } break;
+    case e12_cmd_t::CMD_NODE_SLEEP: {
     } break;
     case e12_cmd_t::CMD_CONFIG: {
       resp->msg.head.len = sizeof(_dev_ptr->config);

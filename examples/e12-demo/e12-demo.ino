@@ -76,8 +76,8 @@ void setup() {
   demo.begin(&Wire, E12_BUS_ADDRESS);
   sensors.begin();
 
-  add_repeating_timer_ms(5000, timer_callback_blink, NULL, &timer_blink);
-  add_repeating_timer_ms(10000, timer_callback_temp, NULL, &timer_temp);
+  add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
+  add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 
   // here we activate the Wifi and ask e12 node to
   // always fetch its configaration from the server

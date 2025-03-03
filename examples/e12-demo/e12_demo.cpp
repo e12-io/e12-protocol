@@ -152,11 +152,11 @@ uint32_t e12_demo::demo() {
       Serial.println("Executing: Requesting TIME from e12 node");
       send(get_request(e12_cmd_t::CMD_TIME));
     } break;
-    case E12_WAKE_ME_UP: {
+    case E12_SCHEDULE_WAKEUP: {
       Serial.println("Executing: WAKE ME UP in 10 sec");
       e12_wakeup_data_t wakeup = {0};
       wakeup.ms = 10000;
-      send(get_request(e12_cmd_t::CMD_WAKE_ME_UP, true, (void*)&wakeup));
+      send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
     } break;
     case E12_NODE_WAKEUP: {
       Serial.println("Executing: e12 node wakeup");

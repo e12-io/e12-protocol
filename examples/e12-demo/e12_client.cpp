@@ -122,8 +122,13 @@ int e12_client::on_receive(e12_packet_t* p) {
     } break;
     case e12_cmd_t::CMD_STATE: {
     } break;
-    case e12_cmd_t::CMD_WAKE_ME_UP: {
+    case e12_cmd_t::CMD_SCHEDULE_WAKEUP: {
       Serial.println("OK");
+    } break;
+    case e12_cmd_t::CMD_NODE_SLEEP: {
+      Serial.print("CMD_NODE_SLEEP: ");
+      uint32_t ms = p->msg_sleep.ms;
+      Serial.println(ms);
     } break;
   }
 
