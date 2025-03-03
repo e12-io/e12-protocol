@@ -55,9 +55,10 @@ e12_onwire_t* e12::encode(e12_packet_t* data) {
   e12_onwire_t* pkt = get_encode_buffer();
   pkt->head.magic[0] = E12_MAGIC_MARKER_1;  // e12
   pkt->head.magic[1] = E12_MAGIC_MARKER_2;
-  pkt->head.len = sizeof(e12_onwire_head_t) + sizeof(e12_header_t) +
-                  data->msg.head.len + sizeof(pkt->checksum);
-  pkt->checksum = get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
+  pkt->head.len =
+      sizeof(e12_onwire_head_t) + sizeof(e12_header_t) + data->msg.head.len;
+  pkt->head.checksum =
+      get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
   return pkt;
 }
 
@@ -290,12 +291,12 @@ e12_packet_t* e12::decode(e12_onwire_t* pkt, uint8_t data) {
       pkt->recv_len = 0;
       uint8_t checksum =
           get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
-      if (checksum != pkt->checksum) {
+      if (checksum != pkt->head.checksum) {
 #if ESP32_E12_SPEC
         ESP_LOGE(
             TAG,
             "e12::decode(CHECKSUM FAILED, expected = %02x, received = %02x)",
-            pkt->checksum, checksum);
+            pkt->head.checksum, checksum);
 #endif
         return NULL;
       }

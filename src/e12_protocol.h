@@ -183,7 +183,7 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire_head {
   struct {
     uint8_t magic[E12_MAGIC_MARKER_LEN];
     uint8_t len;
-    uint8_t resv;
+    uint8_t checksum;
   };
 } e12_onwire_head_t;
 
@@ -222,7 +222,6 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire {
   struct {
     e12_onwire_head_t head;
     e12_packet_t data;
-    uint8_t checksum;
     uint8_t resp_pending : 1;
     uint8_t : 0;
     uint8_t recv_len;
