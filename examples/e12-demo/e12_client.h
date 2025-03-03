@@ -33,9 +33,9 @@ class e12_client : public e12_arduino {
   e12_client(uint32_t vid, uint32_t pid) : e12_arduino(vid, pid) {}
 
   ~e12_client() {}
-  int wakeup_e12();
+  int wakeup_e12_node();
   int sleep(uint32_t ms, void* data);
-  int send(e12_packet_t* buf);
+  int send(e12_packet_t* buf, bool retry = true);
   int on_receive(e12_packet_t* p);
 };
 

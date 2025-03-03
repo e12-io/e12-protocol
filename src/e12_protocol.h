@@ -67,6 +67,15 @@ enum class e12_cmd_t : uint8_t {
 };
 
 /**
+ * @brief Used to indicate the error status of an operation.
+ *
+ */
+enum class e12_err_t : int8_t {
+  ERR_NONE = 0,
+  ERR_RETRY_LATER = -1,
+};
+
+/**
  * @brief Used to indicate the status of an event.
  * This information is typically carried in a log event
  *
@@ -76,6 +85,17 @@ enum class e12_evt_status_t : uint8_t {
   STATUS_NEW,
   STATUS_IN_PROCESSING,
   STATUS_IN_WAITING
+};
+
+/**
+ * @brief Used to indicate the operation status of an e12 node
+ *  e.g active, sleep, ota etc
+ */
+enum class e12_node_op_status_t : uint8_t {
+  STATUS_NONE = 0,
+  STATUS_ACTIVE,
+  STATUS_SLEEP,
+  STATUS_OTA
 };
 
 #define E12_MAX_LOG_BUFFERS 1
@@ -160,8 +180,14 @@ typedef struct __attribute__((packed, aligned(4))) e12_node_state {
     uint8_t CONFIGURED : 1;
     uint8_t CONNECTED : 1;
   };
-  uint8_t resv;
+  e12_node_op_status_t op_status;
   uint16_t next_connection_in_sec;
+  union {
+    uint32_t data;
+    struct {
+      uint32_t node_wake_up_ms;  // if e12_node is in sleep mode
+    };
+  };
 } e12_node_state_t;
 
 #define MAX_LOG_SIZE (sizeof(e12_log_evt_t))
@@ -291,6 +317,20 @@ class e12 {
    * @param buf Pointer to the buffer to be flushed
    */
   void flush_buffer(e12_onwire_t* buf);
+  /**
+   * @brief Gets the status of the e12 node.
+   * @return Status of the e12 node
+   */
+  e12_node_op_status_t get_node_status();
+  /**
+   * @brief Sets the status of the e12 node.
+   * @param status Status to be set
+   * @param data uint32_t size data to be stored relevant to the status e.g for
+   * SLEEP this is ms till the e12_node is in sleep mode
+   * @return Status of the e12 node
+   */
+  e12_node_op_status_t set_node_status(e12_node_op_status_t status,
+                                       uint32_t data);
 
  public:
   /**
@@ -422,7 +462,7 @@ class e12 {
    * @brief Wakes up the e12 node.
    * @return 0 on success, non-zero on failure
    */
-  virtual int wakeup_e12() { return 0; }
+  virtual int wakeup_e12_node() { return 0; }
 
   // Utility
 
@@ -438,7 +478,7 @@ class e12 {
   virtual int begin(void* bus, uint8_t e12_addr = 0) = 0;
   virtual uint32_t get_time_ms() = 0;
   virtual e12_log_evt_t* get_log_evt() = 0;
-  virtual int send(e12_packet_t* buf) = 0;
+  virtual int send(e12_packet_t* buf, bool retry = true) = 0;
   virtual e12_packet_t* read() = 0;
   virtual int sleep(uint32_t ms, void* data) = 0;
   virtual int log(uint8_t type, uint8_t status, uint32_t ts, void* data) = 0;

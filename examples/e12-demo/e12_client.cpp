@@ -41,10 +41,10 @@ to Wire library: Wire.h and twi.h
 #define WAKEUP_INTR_PIN 22
 
 // NOTE: here can be used to debug. In most cases not needed
-int e12_client::send(e12_packet_t* buf) {
+int e12_client::send(e12_packet_t* buf, bool retry) {
   // TODO: here you can write some debug/forensic on
   // buffer aka wireshark
-  e12_arduino::send(buf);
+  e12_arduino::send(buf, retry);
   return 0;
 }
 
@@ -52,7 +52,7 @@ static void wakeme_up_from_sleep() {
   Serial.println("**********WHO WOKE ME UP ?***********");
 }
 
-int e12_client::wakeup_e12() {
+int e12_client::wakeup_e12_node() {
   Serial.println("**********WAKE UP e12 ***********");
   // Briefly pulse the pin HIGH then LOW
 
@@ -109,6 +109,8 @@ set_sys_clock_khz(133000, true);
 int e12_client::on_receive(e12_packet_t* p) {
   e12_arduino::on_receive(p);
   Serial.print("Received : ");
+  Serial.print("cmd = ");
+  Serial.println((int)p->msg.head.cmd);
   switch (p->msg.head.cmd) {
     case e12_cmd_t::CMD_PING: {
       Serial.println((char*)p->msg.data);
@@ -119,16 +121,17 @@ int e12_client::on_receive(e12_packet_t* p) {
       Serial.println(ms);
     } break;
     case e12_cmd_t::CMD_CONFIG: {
+      Serial.println("Recieved CONFIG");
     } break;
     case e12_cmd_t::CMD_STATE: {
+      Serial.println("Recieved STATE");
     } break;
     case e12_cmd_t::CMD_SCHEDULE_WAKEUP: {
       Serial.println("OK");
     } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
       Serial.print("CMD_NODE_SLEEP: ");
-      uint32_t ms = p->msg_sleep.ms;
-      Serial.println(ms);
+      Serial.println(p->msg_sleep.ms);
     } break;
   }
 

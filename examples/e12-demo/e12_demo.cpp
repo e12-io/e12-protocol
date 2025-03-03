@@ -160,7 +160,7 @@ uint32_t e12_demo::demo() {
     } break;
     case E12_NODE_WAKEUP: {
       Serial.println("Executing: e12 node wakeup");
-      wakeup_e12();
+      wakeup_e12_node();
       return 0;
     } break;
     case E12_NODE_TRANSMIT: {

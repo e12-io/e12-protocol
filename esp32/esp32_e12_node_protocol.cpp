@@ -72,7 +72,7 @@ uint32_t e12_esp32_node::get_time_ms() {
  * @param buf Pointer to the packet buffer.
  * @return int 0 on success, non-zero on failure.
  */
-int e12_esp32_node::send(e12_packet_t* buf) {
+int e12_esp32_node::send(e12_packet_t* buf, bool retry) {
   if (!_bus) return -1;
   e12_onwire_t* p = encode(buf);
   if (!p) {

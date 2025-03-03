@@ -85,7 +85,7 @@ class e12_arduino : public e12 {
    * @param buf Packet buffer
    * @return int Status of send operation
    */
-  virtual int send(e12_packet_t* buf);
+  virtual int send(e12_packet_t* buf, bool retry = true);
 
   /**
    * @brief Read a packet from the e12 device.

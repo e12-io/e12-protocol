@@ -72,9 +72,10 @@ class e12_esp32_node : public e12 {
   /**
    * @brief Sends a packet to the e12 node.
    * @param buf Pointer to the packet buffer
+   * @param retry True if the packet should be retried, false otherwise
    * @return 0 on success, non-zero on failure
    */
-  virtual int send(e12_packet_t* buf);
+  virtual int send(e12_packet_t* buf, bool retry = true);
 
   /**
    * @brief Reads a packet from the e12 node.

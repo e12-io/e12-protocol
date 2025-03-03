@@ -115,8 +115,6 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       memcpy(p->msg.data, data, p->msg.head.len);
     } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
-      // this is actually not response but request
-      // TODO : fix the architecture a bit here
       p->msg_sleep.ms = *(uint32_t*)data;
       p->msg.head.len = sizeof(uint32_t);
     } break;
@@ -276,6 +274,12 @@ int e12::on_receive(e12_packet_t* p) {
         return 0;
       }
     } break;
+    case e12_cmd_t::CMD_NODE_SLEEP: {
+      uint32_t ms = p->msg_sleep.ms;
+      if (ms) {
+        set_node_status(e12_node_op_status_t::STATUS_SLEEP, ms);
+      }
+    } break;
   }
   return 0;
 }
@@ -331,4 +335,48 @@ e12_packet_t* e12::e12_get_packet() {
   memset(pkt, 0, sizeof(e12_onwire_t));
   pkt->data.msg.head.seq = ++_seq;
   return &pkt->data;
+}
+
+/**
+ * @brief Gets the status of the e12 node.
+ * @return Status of the e12 node
+ */
+e12_node_op_status_t e12::get_node_status() {
+  switch (_status.op_status) {
+    case e12_node_op_status_t::STATUS_ACTIVE:
+      _status.node_wake_up_ms = 0;
+      break;
+    case e12_node_op_status_t::STATUS_SLEEP:
+      if (get_time_ms() > _status.node_wake_up_ms) {
+        return set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
+      }
+      break;
+    default:
+      break;
+  }
+  return _status.op_status;
+}
+
+/**
+ * @brief Sets the status of the e12 node.
+ * @param status Status to be set
+ * @param data uint32_t size data to be stored relevant to the status e.g for
+ * SLEEP this is ms till the e12_node is in sleep mode
+ * @return Status of the e12 node
+ */
+e12_node_op_status_t e12::set_node_status(e12_node_op_status_t status,
+                                          uint32_t data) {
+  _status.op_status = status;
+  switch (status) {
+    case e12_node_op_status_t::STATUS_ACTIVE:
+      _status.node_wake_up_ms = 0;
+      wakeup_e12_node();
+      break;
+    case e12_node_op_status_t::STATUS_SLEEP:
+      _status.node_wake_up_ms = data + get_time_ms();
+      break;
+    default:
+      break;
+  }
+  return _status.op_status;
 }

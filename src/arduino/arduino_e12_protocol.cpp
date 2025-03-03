@@ -23,6 +23,9 @@ int e12_arduino::begin(void* bus, uint8_t e12_addr) {
   _bus->begin();
   // _bus->setClock(100000);
   _bus->setClock(100000UL);  // experimenting with 1Mhz speed
+
+  // good time to make sure that e12 node is awake
+  set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
   return 0;
 }
 
@@ -53,18 +56,24 @@ int e12_arduino::sleep(uint32_t ms, void* data) {
     e12_wakeup_data_t wakeup = {0};
     wakeup.ms = ms;
     send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
-    if (!read()) {
-      wakeup_e12();
-      return -1;
-    }
-    send(get_request(e12_cmd_t::CMD_STATE, true, (void*)true));
-    read();
   }
   return 0;
 }
 
-int e12_arduino::send(e12_packet_t* buf) {
+int e12_arduino::send(e12_packet_t* buf, bool retry) {
   if (!buf) return 0;
+
+  // check the status of the e12 node
+  if (get_node_status() == e12_node_op_status_t::STATUS_SLEEP) {
+    // TODO: we can initiate a wakeup
+    set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
+    if (retry) {
+      delay(100);  // we expect the node to become operational in 100ms
+    } else {
+      // return an error to return later
+      return (int)e12_err_t::ERR_RETRY_LATER;
+    }
+  }
 
   e12_onwire_t* req = encode(buf);
   req->resp_pending = req->data.msg.head.RESP_EXPECTED;
