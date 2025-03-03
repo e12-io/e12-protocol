@@ -158,14 +158,6 @@ class e12_esp32_node : public e12 {
    * @return 0 on success, non-zero on failure
    */
   virtual int print_buffer(e12_onwire_t* buf);
-
-  /**
-   * @brief Calculates the checksum of the given data.
-   * @param data Pointer to the data
-   * @param len Length of the data
-   * @return Calculated checksum
-   */
-  virtual uint8_t get_checksum(const char* data, uint8_t len);
 };
 
 #endif

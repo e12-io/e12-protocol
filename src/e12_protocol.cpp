@@ -141,6 +141,21 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
 }
 
 /**
+ * @brief Get the checksum for the given data
+ *
+ * @param data Pointer to the data
+ * @param len Length of the data
+ * @return uint8_t Checksum value
+ */
+uint8_t e12::get_checksum(const char* data, uint8_t len) {
+  uint8_t checksum = 0;
+  for (uint8_t i = 0; i < len; i++) {
+    checksum ^= data[i];
+  }
+  return checksum;
+}
+
+/**
  * @brief Get the message from the on-wire packet
  *
  * @param data Pointer to the data packet to store the message
@@ -273,6 +288,17 @@ e12_packet_t* e12::decode(e12_onwire_t* pkt, uint8_t data) {
       // we received the full packet. We can do the checksum
       // validation
       pkt->recv_len = 0;
+      uint8_t checksum =
+          get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
+      if (checksum != pkt->checksum) {
+#if ESP32_E12_SPEC
+        ESP_LOGE(
+            TAG,
+            "e12::decode(CHECKSUM FAILED, expected = %02x, received = %02x)",
+            pkt->checksum, checksum);
+#endif
+        return NULL;
+      }
       return &pkt->data;
     }
   } else if (pkt->recv_len == E12_MAGIC_MARKER_LEN) {
@@ -297,12 +323,3 @@ e12_packet_t* e12::e12_get_packet() {
   pkt->data.msg.head.seq = ++_seq;
   return &pkt->data;
 }
-
-/**
- * @brief Calculate the checksum for the given data
- *
- * @param data Pointer to the data
- * @param len Length of the data
- * @return uint8_t Checksum value
- */
-uint8_t e12::get_checksum(const char* data, uint8_t len) { return 0; }

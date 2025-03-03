@@ -398,6 +398,15 @@ class e12 {
   bool get_message(e12_packet_t* data);
 
   /**
+   * @brief Get the checksum object
+   *
+   * @param data Pointer to the data
+   * @param len Length of the data
+   * @return uint8_t Returns the checksum
+   */
+  uint8_t get_checksum(const char* data, uint8_t len);
+
+  /**
    * @brief Handles the received packet.
    * @param p Pointer to the received packet
    * @return 0 on success, non-zero on failure
@@ -424,7 +433,6 @@ class e12 {
   virtual int begin(void* bus, uint8_t e12_addr = 0) = 0;
   virtual uint32_t get_time_ms() = 0;
   virtual e12_log_evt_t* get_log_evt() = 0;
-  virtual uint8_t get_checksum(const char* data, uint8_t len) = 0;
   virtual int send(e12_packet_t* buf) = 0;
   virtual e12_packet_t* read() = 0;
   virtual int sleep(uint32_t ms, void* data) = 0;

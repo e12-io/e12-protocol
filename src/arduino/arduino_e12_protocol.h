@@ -119,14 +119,6 @@ class e12_arduino : public e12 {
    * @return int Status of the operation
    */
   virtual int sleep(uint32_t ms, void* data);
-
-  /**
-   * @brief Calculate checksum for the given data.
-   * @param data Data buffer
-   * @param len Length of the data
-   * @return uint8_t Checksum value
-   */
-  virtual uint8_t get_checksum(const char* data, uint8_t len);
 };
 
 #endif

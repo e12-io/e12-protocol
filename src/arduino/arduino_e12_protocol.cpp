@@ -108,8 +108,6 @@ e12_packet_t* e12_arduino::read() {
   return NULL;
 }
 
-uint8_t e12_arduino::get_checksum(const char* data, uint8_t len) { return 0; }
-
 void e12_arduino::e12_run() {
   if (!is_configured()) {
     send(get_request(e12_cmd_t::CMD_CONFIG));

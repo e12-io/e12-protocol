@@ -184,21 +184,6 @@ int e12_esp32_node::on_config(const char* s, int len) {
 }
 
 /**
- * @brief Calculates the checksum of the given data.
- *
- * @param data Pointer to the data.
- * @param len Length of the data.
- * @return uint8_t Calculated checksum.
- */
-uint8_t e12_esp32_node::get_checksum(const char* data, uint8_t len) {
-  uint8_t checksum = 0;
-  for (uint8_t i = 0; i < len; i++) {
-    checksum ^= data[i];
-  }
-  return checksum;
-}
-
-/**
  * @brief Prints the content of the buffer.
  *
  * @param buf Pointer to the buffer.
