@@ -122,7 +122,7 @@ int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
       evt->f = true;
     } break;
   }
-  send(get_request(e12_cmd_t::CMD_LOG, false, evt));
+  send(get_request(e12_cmd_t::CMD_LOG, true, evt));
   evt->in_use = false;
   return 0;
 };
