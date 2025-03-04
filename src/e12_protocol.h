@@ -155,6 +155,7 @@ typedef struct __attribute__((packed, aligned(4))) e12_node_properties {
       uint8_t ACTIVATE_WIFI_CAPTIVE_PORTAL : 1;
       uint8_t ENCRYPT : 1;
       uint8_t TRANSMIT : 1;
+      uint8_t LOGMASK : 1;
     };
   };
   union {

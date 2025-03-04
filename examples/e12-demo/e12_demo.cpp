@@ -190,6 +190,13 @@ uint32_t e12_demo::demo() {
     case E12_SEND_WIFI_AUTH: {
       return E12_SEND_WIFI_AUTH;
     } break;
+    case E12_NODE_LOGMASK: {
+      Serial.println("Executing: e12 logmask");
+      e12_node_properties_t p = {0};
+      p.LOGMASK = true;
+      p.data = (uint64_t)0x01 << 26;  // dont log DEBUG_BLINK
+      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
+    } break;
     default: {
       return -1;
     }
