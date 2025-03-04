@@ -157,6 +157,13 @@ typedef struct __attribute__((packed, aligned(4))) e12_node_properties {
       uint8_t TRANSMIT : 1;
     };
   };
+  union {
+    uint64_t data;
+    struct {
+      uint32_t data1;
+      uint32_t data2;
+    };
+  };
 } e12_node_properties_t;
 
 #define MAX_SSID_LEN 32
@@ -237,7 +244,7 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
   } msg_debug_blink;
   struct {
     e12_header_t head;
-    e12_node_properties_t data;
+    e12_node_properties_t props;
   } msg_node_props;
   struct {
     e12_header_t head;

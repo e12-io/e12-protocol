@@ -102,7 +102,7 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     } break;
     case e12_cmd_t::CMD_SET_NODE_PROPERTIES: {
       e12_node_properties_t* props = (e12_node_properties_t*)data;
-      p->msg_node_props.data.flags = props->flags;
+      p->msg_node_props.props.flags = props->flags;
       p->msg.head.len = sizeof(e12_node_properties_t);
     } break;
     case e12_cmd_t::CMD_TIME: {
