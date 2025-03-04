@@ -233,6 +233,10 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
   } msg;
   struct {
     e12_header_t head;
+    uint32_t err;  // 0 = OK, 1 = ERR
+  } msg_err;
+  struct {
+    e12_header_t head;
     uint32_t ms;
   } msg_wakeup;
   struct {

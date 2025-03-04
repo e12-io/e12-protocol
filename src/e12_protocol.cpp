@@ -221,8 +221,6 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
       resp->msg_time.ms = get_time_ms();
       resp->msg.head.len = sizeof(uint32_t);
     } break;
-    case e12_cmd_t::CMD_NODE_SLEEP: {
-    } break;
     case e12_cmd_t::CMD_CONFIG: {
       resp->msg.head.len = sizeof(_dev_ptr->config);
       if (!memcpy(resp->msg.data, &_dev_ptr->config, resp->msg.head.len)) {
@@ -246,8 +244,11 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
         resp->msg.head.len = sizeof(e12_data_t);
       }
     } break;
-    default:
-      break;
+    default: {
+      // just send OK response.
+      resp->msg_err.head.len = sizeof(resp->msg_err);
+      resp->msg_err.err = 0;
+    } break;
   }
   return resp;
 }

@@ -79,14 +79,14 @@ void setup() {
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 
+  // enable interrupt handling
+  // once triggered then read e12 message
+  e12_intr();
+
   // here we activate the Wifi and ask e12 node to
   // always fetch its configaration from the server
   e12_node_properties_t p = {.REFRESH_CONFIG = true, .ACTIVATE_WIFI = true};
   demo.set_node_properties(&p);
-
-  // enable interrupt handling
-  // once triggered then read e12 message
-  e12_intr();
 }
 
 #define E12_WAKEUP_WAIT 1000
