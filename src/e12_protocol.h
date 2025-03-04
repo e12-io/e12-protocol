@@ -399,10 +399,16 @@ class e12 {
   void set_timeout(uint32_t ms) { _timeout = ms; }
 
   /**
-   * @brief Checks if the e12 node is configured.
-   * @return True if the node is configured, false otherwise
+   * @brief Checks if the e12 endpoint is configured.
+   * @return True if the endpoint is configured, false otherwise
    */
   bool is_configured() { return _status.CONFIGURED; }
+
+  /**
+   * @brief Set the configured status for e12 endpoint
+   * @param status  true if configured, false otherwise
+   */
+  void set_configured(bool status) { _status.CONFIGURED = status; }
 
   /**
    * @brief Gets the version of the e12 protocol.

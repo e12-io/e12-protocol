@@ -180,6 +180,7 @@ int e12_esp32_node::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
  */
 int e12_esp32_node::on_config(const char* s, int len) {
   ESP_LOGI(TAG, "e12_esp32_node::on_config()");
+  set_configured(true);
   return 0;
 }
 
