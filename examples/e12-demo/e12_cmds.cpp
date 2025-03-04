@@ -19,25 +19,27 @@
 #include "e12_cmds.h"
 
 #include "Arduino.h"
-
 void print_help() {
   Serial.println("Welcome to e12 demo ....");
-  Serial.println("Enter option number to trigger action !");
-  Serial.println("1 : Send PING to e12 node");
-  Serial.println("2 : Send STATE to e12 node");
-  Serial.println("3 : Fetch my CONFIG from e12 node");
-  Serial.println("4 : Send AUTH data to e12 node");
-  Serial.println("5 : Instruct e12 node to ACTIVATE AP");
-  Serial.println("6 : Send a LOG event to e12 node");
-  Serial.println("7 : Get e12 node STATUS");
-  Serial.println("8 : Instruct e12 to TRANSMIT - NOW");
-  Serial.println("9 : WAKE ME UP after 10 sec");
-  Serial.println("10 : Send WAKEUP instruction to e12 node");
-  Serial.println("11 : Ask e12 node to initiate OTA");
-  Serial.println("12 : e12 node please BLINK");
-  Serial.println("13 : e12 node please DISABLE SLEEP");
-  Serial.println("14 : get Time from e12 node");
-  Serial.println("15 : send WiFi Auth to e12 node");
+  Serial.println(
+      "1: Print this help message. Enter option number to trigger action !");
+  Serial.println("2 : Send PING to e12 node");
+  Serial.println("3 : Send STATE to e12 node");
+  Serial.println("4 : Fetch my CONFIG from e12 node");
+  Serial.println("5 : Refresh CONFIG from e12 server");
+  Serial.println("6 : Send AUTH data to e12 node");
+  Serial.println("7 : send WiFi Auth to e12 node");
+  Serial.println("8 : WAKE ME UP after 10 sec");
+  Serial.println("9 : Send a LOG event to e12 node");
+  Serial.println("10 : get Time from e12 node");
+  Serial.println("11 : Instruct e12 node to ACTIVATE AP");
+  Serial.println("12 : Get e12 node STATUS");
+  Serial.println("13 : Instruct e12 to TRANSMIT - NOW");
+  Serial.println("14 : Send WAKEUP instruction to e12 node");
+  Serial.println("15 : Ask e12 node to initiate OTA");
+  Serial.println("16 : e12 node please DISABLE SLEEP");
+  Serial.println("17 : set logmask for e12 node");
+  Serial.println("18 : e12 node please BLINK");
 }
 
 #define MAX_CMD_LEN 32
@@ -50,40 +52,13 @@ int process_command(const char* cmd) {
     print_help();
     return E12_DEMO_HELP;
   }
-  switch (atoi(cmd)) {
-    case 1:
-      return E12_SEND_PING;
-    case 2:
-      return E12_SEND_STATE;
-    case 3:
-      return E12_FETCH_CONFIG;
-    case 4:
-      return E12_SEND_AUTH;
-    case 5:
-      return E12_NODE_ACTIVATE_AP;
-    case 6:
-      return E12_SEND_LOG;
-    case 7:
-      return E12_NODE_SEND_STATUS;
-    case 8:
-      return E12_NODE_TRANSMIT;
-    case 9:
-      return E12_SCHEDULE_WAKEUP;
-    case 10:
-      return E12_NODE_WAKEUP;
-    case 11:
-      return E12_NODE_INITIATE_OTA;
-    case 12:
-      return E12_NODE_BLINK;
-    case 13:
-      return E12_NODE_DISABLE_SLEEP;
-    case 14:
-      return E12_GET_TIME;
-    case 15:
-      return E12_SEND_WIFI_AUTH;
-    default:
-      return E12_CMD_NONE;
+
+  int command = atoi(cmd);
+  if (command >= E12_DEMO_HELP && command <= E12_NODE_BLINK) {
+    return command;
   }
+
+  return E12_CMD_NONE;
 }
 
 int get_cmd() {
