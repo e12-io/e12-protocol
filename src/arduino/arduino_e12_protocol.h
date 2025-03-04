@@ -23,8 +23,6 @@
 #include <e12_protocol.h>
 #include <stdint.h>
 
-#define DEBUG 1
-
 /**
  * @brief Structure to hold event data.
  */

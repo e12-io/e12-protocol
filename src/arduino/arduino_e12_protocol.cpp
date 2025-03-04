@@ -6,6 +6,7 @@
 
 #define MAX_RESP_TIMEOUT 5000
 #define E12_INTR_PIN 2
+#define DEBUG 1
 
 e12_arduino::e12_arduino(uint32_t vid, uint32_t pid) : e12(vid, pid) {}
 
@@ -80,12 +81,17 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
   req->ts = millis();
 
   _bus->beginTransmission(_e12_addr);
+
 #if DEBUG
+  Serial.print("Sending Request cmd: ");
+  Serial.println((int)buf->msg.head.cmd);
+#if 0
   for (int i = 0; i < req->head.len; i++) {
     uint8_t c = req->buf[i];
     Serial.print((byte)c);
   }
   Serial.println("");
+#endif
 #endif
   _bus->write(req->buf, req->head.len);
   if (_bus->endTransmission() != 0) {
@@ -97,8 +103,10 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
 
 e12_packet_t* e12_arduino::read() {
   int num = _bus->requestFrom(_e12_addr, (uint8_t)sizeof(e12_onwire_t));
+#if 0
   Serial.print("e12_arduino::read() : ");
   Serial.println(num);
+#endif
   if (!num) return NULL;
 
   e12_onwire_t* f = get_decode_buffer();
@@ -106,7 +114,7 @@ e12_packet_t* e12_arduino::read() {
   e12_packet_t* p = NULL;
   while (_bus->available()) {
     uint8_t c = _bus->read();
-#if DEBUG
+#if 0
     Serial.print((uint8_t)c);
 #endif
     if ((p = decode(f, c))) {

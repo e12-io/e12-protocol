@@ -37,6 +37,7 @@ to Wire library: Wire.h and twi.h
 #include "Arduino.h"
 #include "e12_client.h"
 
+#define DEBUG 1
 #define WAKEUP_INTR 0
 #define WAKEUP_INTR_PIN 22
 
@@ -107,10 +108,20 @@ set_sys_clock_khz(133000, true);
 }
 
 int e12_client::on_receive(e12_packet_t* p) {
+  if (!p) return -1;
+
   e12_arduino::on_receive(p);
-  Serial.print("Received : ");
-  Serial.print("cmd = ");
-  Serial.println((int)p->msg.head.cmd);
+
+#if DEBUG
+  if (p->msg.head.IS_RESPONSE) {
+    Serial.print("Received Response for cmd: ");
+    Serial.println((int)p->msg.head.cmd);
+  } else {
+    Serial.print("Received Request cmd: ");
+    Serial.println((int)p->msg.head.cmd);
+  }
+#endif
+
   switch (p->msg.head.cmd) {
     case e12_cmd_t::CMD_PING: {
       Serial.println((char*)p->msg.data);
