@@ -42,57 +42,32 @@ class e12demoDb {
     return promise;
   }
 
-  /*
-  SELECT 
-    device_id,
-    evt_data->>"$.type" AS type, 
-    evt_data->>"$.count" AS count, 
-    evt_data->>"$.src" AS src, 
-    evt_data->>"$.src_idx" AS src_idx, 
-    evt_data->>"$.f" AS f, 
-    evt_data->>"$.i" AS i, 
-    evt_data->>"$.s" AS s, 
-    evt_data->>"$.ts" AS ts_evt, 
-    evt_data->>"$.v.ts" AS v_evt_ts, 
-    evt_data->>"$.v.type" AS v_evt_type, 
-    evt_data->>"$.v.count" AS v_evt_count, 
-    evt_data->>"$.v.status" AS v_evt_status, 
-    ts
-  FROM timeline_evts WHERE 
-  evt_data->>"$.v.ts" IS NOT NULL AND  
-  evt_data->>"$.v.ts" != 0 AND 
-  evt_data->>"$.f" != 0
-  */
-  async getTemperatureData(device_id) {
-    let sql = "  SELECT device_id," +
-      "evt_data ->> \"$.type\" AS type," +
-      "evt_data ->> \"$.count\" AS count," +
-      "evt_data ->> \"$.src\" AS src," +
-      "evt_data ->> \"$.src_idx\" AS src_idx," +
-      "evt_data ->> \"$.f\" AS f," +
-      "evt_data ->> \"$.i\" AS i," +
-      "evt_data ->> \"$.s\" AS s," +
-      "evt_data ->> \"$.ts\" AS ts_evt," +
-      "evt_data ->> \"$.v.ts\" AS v_evt_ts," +
-      "evt_data ->> \"$.v.type\" AS v_evt_type," +
-      "evt_data ->> \"$.v.count\" AS v_evt_count," +
-      "evt_data ->> \"$.v.status\" AS v_evt_status," +
-      "ts " +
-      "FROM timeline_evts WHERE " +
-      "evt_data ->> \"$.v.ts\" IS NOT NULL AND " +
-      "evt_data ->> \"$.v.ts\" != 0 AND " +
-      "evt_data ->> \"$.f\" != 0 AND " +
-      "evt_data ->> \"$.v.type\" IN(2)"; // v.type = 2 is for temperature
-    sql += " AND device_id = " + mysql.escape(device_id);
-
-    let resp = await this._fetchData(sql);
-    if (resp) {
-      return resp;
+  /**
+   * 
+   * @param {*} device_id 
+   * @param {*} type 
+   * @param {*} from_date 
+   * @param {*} days 
+   * @returns 
+   */
+  async getVendorData(device_id, type, from_date, days) {
+    //  no device_id or type, return null
+    if (device_id == null || type == null) {
+      return null;
     }
-    return null;
-  }
 
-  async getBlinkData(device_id) {
+    // no from_date, set to today
+    if (from_date == null) {
+      from_date = new Date();
+      from_date.setHours(0, 0, 0, 0);
+      from_date = from_date.toISOString().split('T')[0];
+    }
+
+    // no days, set to 1
+    if (days == null) {
+      days = 1;
+    }
+
     let sql = "  SELECT device_id," +
       "evt_data ->> \"$.type\" AS type," +
       "evt_data ->> \"$.count\" AS count," +
@@ -110,8 +85,11 @@ class e12demoDb {
       "FROM timeline_evts WHERE " +
       "evt_data ->> \"$.v.ts\" IS NOT NULL AND " +
       "evt_data ->> \"$.v.ts\" != 0 AND " +
-      "evt_data ->> \"$.v.type\" IN(1)"; // v.type = 1 is for blink
-    sql += " AND device_id = " + mysql.escape(device_id);
+      "evt_data ->> \"$.ts\" / 1000000 >= UNIX_TIMESTAMP(" + mysql.escape(from_date) + ") AND " +
+      "evt_data ->> \"$.ts\" / 1000000 < UNIX_TIMESTAMP(DATE_ADD(" + mysql.escape(from_date) + ", INTERVAL " + days + " DAY)) AND " +
+      "evt_data ->> \"$.v.type\" IN(" + type + ") AND " +
+      "device_id = " + mysql.escape(device_id) +
+      " ORDER BY ts_evt DESC";
 
     let resp = await this._fetchData(sql);
     if (resp) {

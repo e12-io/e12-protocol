@@ -2,16 +2,23 @@ var express = require('express');
 var router = express.Router();
 const api = require("./demo");
 
+/**
+ * Example POST request
+ * POST http://localhost:8080/api/data
+ * Content-Type: application/json
+ * Body: 
+  {
+  "device_id": "207335542776556", 
+  "type": 1, 
+  "from_date": "2025-03-03", 
+  "days": 2
+  }
+ */
 router.post([
-  '/temp',
-  '/blink'
+  '/data'
 ], function (req, res, next) {
-  if (req.path === '/temp') {
-    let response = api.onGetTemperatureData(req, (response) => {
-      sendResponse(res, response);
-    });
-  } else if (req.path === '/blink') {
-    let response = api.onGetBlinkData(req, (response) => {
+  if (req.path === '/data') {
+    let response = api.getVendorData(req, (response) => {
       sendResponse(res, response);
     });
   } else {
