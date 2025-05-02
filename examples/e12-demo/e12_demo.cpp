@@ -197,6 +197,9 @@ uint32_t e12_demo::demo() {
       p.data = (uint64_t)0x01 << 26;  // dont log DEBUG_BLINK
       send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
     } break;
+    case E12_NODE_INITIATE_OTA: {
+      send(get_request(e12_cmd_t::CMD_OTA));
+    } break;
     default: {
       return -1;
     }

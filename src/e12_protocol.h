@@ -66,6 +66,15 @@ enum class e12_cmd_t : uint8_t {
   CMD_DEBUG_BLINK
 };
 
+enum class e12_release_t : uint8_t {
+  /// Stable release
+  STABLE = 0,
+  /// Canary release
+  CANARY,
+  /// Development release
+  DEV
+};
+
 /**
  * @brief Used to indicate the error status of an operation.
  *
@@ -224,6 +233,7 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire_head {
 } e12_onwire_head_t;
 
 #define E12_MAX_CMD_DATA_PAYLOAD (E12_MAX_DATA_PAYLOAD - sizeof(e12_header_t))
+#define E12_MAX_FIRMWARE_VERSION_LEN 16
 
 typedef union __attribute__((packed, aligned(4))) e12_packet {
   uint8_t buf[E12_MAX_DATA_PAYLOAD];
@@ -259,6 +269,11 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
     e12_header_t head;
     uint32_t ms;
   } msg_time;
+  struct {
+    e12_header_t head;
+    uint32_t release_type;
+    char version[E12_MAX_FIRMWARE_VERSION_LEN];
+  } msg_ota;
 } e12_packet_t;
 
 typedef union __attribute__((packed, aligned(4))) e12_onwire {
