@@ -140,6 +140,11 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
         s->FETCH = true;
       }
     } break;
+    case e12_cmd_t::CMD_OTA: {
+      p->msg_ota.release_type = (uint32_t)e12_release_t::STABLE;
+      p->msg_ota.version[0] = 0;  // TODO: set the version e.g git hash
+      p->msg.head.len = sizeof(p->msg_ota);
+    } break;
     default:
       break;
   }
