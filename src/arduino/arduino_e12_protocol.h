@@ -23,6 +23,8 @@
 #include <e12_protocol.h>
 #include <stdint.h>
 
+using namespace arduino;
+
 /**
  * @brief Structure to hold event data.
  */
@@ -35,7 +37,13 @@ typedef struct e12_event {
  */
 class e12_arduino : public e12 {
  private:
-  uint8_t _e12_addr;                        ///< e12 device address
+  uint8_t _e12_addr;  ///< e12 device address
+
+#ifdef ARDUINO_SAMD_ZERO  //__SAMD21__
+#warning "SAMD21 detected"
+#else
+#endif
+
   TwoWire* _bus;                            ///< I2C bus
   uint32_t _evt_count;                      ///< Event count
   e12_log_evt_t _log[E12_MAX_LOG_BUFFERS];  ///< Log buffer

@@ -21,7 +21,7 @@
 #include "Arduino.h"
 #include "e12_cmds.h"
 #include "e12_demo.h"
-#include "pico/stdlib.h"
+#include "e12_variants.h"
 
 #define E12_BUS_ADDRESS 0x30
 
@@ -30,10 +30,11 @@
 
 e12_demo demo(E12HQ_VENDOR_ID, E12HQ_VENDOR_ID);
 
+static uint8_t event_flag = 0x00;
+
+#if ARDUINO_RASPBERRY_PI_PICO
 struct repeating_timer timer_blink;
 struct repeating_timer timer_temp;
-
-static uint8_t event_flag = 0x00;
 bool timer_callback_blink(struct repeating_timer *t) {
   event_flag |= 0x01;
   return true;
@@ -43,10 +44,25 @@ bool timer_callback_temp(struct repeating_timer *t) {
   event_flag |= (0x01 << 1);
   return true;
 }
+#elif ARDUINO_SAMD_ZERO  //__SAMD21__
+#include <fast_samd21_tc3.h>
+#include <fast_samd21_tc4_tc5.h>
+
+#define LED_PIN LED_BUILTIN
+void TC3_Handler(void) {
+  event_flag |= 0x01;
+  TC3->COUNT16.INTFLAG.bit.MC0 = 1;  // clears the interrupt
+}
+
+void TC4_Handler(void) {
+  event_flag |= (0x01 << 1);
+  TC4->COUNT32.INTFLAG.bit.MC0 = 1;  // clears the interrupt
+}
+
+#endif
 
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#define ONE_WIRE_BUS 15
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
@@ -72,12 +88,19 @@ static void e12_intr() {
 }
 
 void setup() {
+#ifdef ARDUINO_RASPBERRY_PI_PICO
+  add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
+  add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
+#elif ARDUINO_SAMD_ZERO
+  fast_samd21_tc3_configure(1000000);  // blink every 1 sec
+  fast_samd21_tc4_tc5_configure(5000000);
+#else
+#warning "No timer code defined for this board"
+#endif
+
   Serial.begin(115200);
   demo.begin(&Wire, E12_BUS_ADDRESS);
   sensors.begin();
-
-  add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
-  add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 
   // enable interrupt handling
   // once triggered then read e12 message
@@ -85,7 +108,10 @@ void setup() {
 
   // here we activate the Wifi and ask e12 node to
   // always fetch its configaration from the server
-  e12_node_properties_t p = {.REFRESH_CONFIG = true, .ACTIVATE_WIFI = true};
+  //  e12_node_properties_t p = {.REFRESH_CONFIG = true, .ACTIVATE_WIFI = true};
+  e12_node_properties_t p = {0};
+  p.REFRESH_CONFIG = true;
+  p.ACTIVATE_WIFI = true;
   demo.set_node_properties(&p);
 }
 
@@ -99,12 +125,15 @@ void loop() {
       // info
       case E12_SEND_WIFI_AUTH: {
         Serial.println("Executing: e12 wifi auth exchange");
-        e12_auth_data_t auth = {.AUTH_WIFI = true};
+        //        e12_auth_data_t auth = {.AUTH_WIFI = true};
+        e12_auth_data_t auth = {0};
+        auth.AUTH_WIFI = true;
         strcpy(auth.wifi.ssid, "WWZ-444703");
         strcpy(auth.wifi.pwd, "FNA7UQGAP7V7B3");
         demo.set_node_auth_credentials(&auth);
       } break;
       default:
+
         break;
     }
   }
@@ -121,9 +150,11 @@ void loop() {
   while (event_flag && mask != 0) {
     switch ((event_flag & mask)) {
       case EVT_BLINK: {
+        // Serial.println("Executing: blink");
         demo.blink();
       } break;
       case EVT_TEMP: {
+        // Serial.println("Executing: Read temperature");
         demo.read_temp(&sensors);
       } break;
     }

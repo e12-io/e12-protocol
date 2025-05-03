@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 #include "Arduino.h"
+#include "e12_variants.h"
 
 #define MAX_RESP_TIMEOUT 5000
-#define E12_INTR_PIN 2
 #define DEBUG 1
 
 e12_arduino::e12_arduino(uint32_t vid, uint32_t pid) : e12(vid, pid) {}
@@ -18,8 +18,12 @@ int e12_arduino::begin(void* bus, uint8_t e12_addr) {
   _timeout = MAX_RESP_TIMEOUT;
   _evt_count = 0;
 
+#ifdef ARDUINO_SAMD_ZERO  //__SAMD21__
+  // default is 20, 21
+#else
   _bus->setSDA(20);
   _bus->setSCL(21);
+#endif
 
   _bus->begin();
   // _bus->setClock(100000);

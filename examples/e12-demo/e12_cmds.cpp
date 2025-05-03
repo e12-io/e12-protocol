@@ -19,6 +19,8 @@
 #include "e12_cmds.h"
 
 #include "Arduino.h"
+#include "e12_variants.h"
+
 void print_help() {
   Serial.println("Welcome to e12 demo ....");
   Serial.println(

@@ -36,10 +36,10 @@ to Wire library: Wire.h and twi.h
 
 #include "Arduino.h"
 #include "e12_client.h"
+#include "e12_variants.h"
 
 #define DEBUG 1
 #define WAKEUP_INTR 0
-#define WAKEUP_INTR_PIN 22
 
 // NOTE: here can be used to debug. In most cases not needed
 int e12_client::send(e12_packet_t* buf, bool retry) {

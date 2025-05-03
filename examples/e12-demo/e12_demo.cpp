@@ -25,6 +25,7 @@
 #include "Arduino.h"
 #include "e12_cmds.h"
 #include "e12_demo.h"
+#include "e12_variants.h"
 
 e12_demo::e12_demo(uint32_t vid, uint32_t pid) : e12_client(vid, pid) {
   _on = false;
