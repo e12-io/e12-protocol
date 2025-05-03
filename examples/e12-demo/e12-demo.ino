@@ -115,7 +115,6 @@ void setup() {
   demo.set_node_properties(&p);
 }
 
-#define E12_WAKEUP_WAIT 1000
 void loop() {
   uint32_t cmd = 0;
   if ((cmd = demo.demo()) >= 0) {
