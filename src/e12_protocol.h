@@ -233,7 +233,7 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire_head {
 } e12_onwire_head_t;
 
 #define E12_MAX_CMD_DATA_PAYLOAD (E12_MAX_DATA_PAYLOAD - sizeof(e12_header_t))
-#define E12_MAX_FIRMWARE_VERSION_LEN 16
+#define E12_MAX_FIRMWARE_VERSION_LEN 32
 
 typedef union __attribute__((packed, aligned(4))) e12_packet {
   uint8_t buf[E12_MAX_DATA_PAYLOAD];

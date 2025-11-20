@@ -22,8 +22,8 @@
 #ifdef ARDUINO_SAMD_ZERO  //__SAMD21__
 #warning "SAMD21 detected"
 #define Serial SerialUSB
-#define E12_INTR_PIN 2
-#define WAKEUP_INTR_PIN 3
+#define E12_INTR_PIN 3
+#define WAKEUP_INTR_PIN 2
 #define ONE_WIRE_BUS 4
 #elif ARDUINO_RASPBERRY_PI_PICO
 #define E12_INTR_PIN 2

@@ -67,7 +67,7 @@ void TC4_Handler(void) {
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-#define E12_INTR_PIN 2
+#define E12_INTR_PIN 3
 
 #define DEBUG 1
 #if DEBUG

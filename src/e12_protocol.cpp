@@ -142,7 +142,9 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     } break;
     case e12_cmd_t::CMD_OTA: {
       p->msg_ota.release_type = (uint32_t)e12_release_t::STABLE;
-      p->msg_ota.version[0] = 0;  // TODO: set the version e.g git hash
+      // set the version to e.g f7f66fa_1761208916_main.bin
+      strncpy(p->msg_ota.version, "f7f66fa_1761208916_main.bin",
+              sizeof(p->msg_ota.version) - 1);
       p->msg.head.len = sizeof(p->msg_ota);
     } break;
     default:
