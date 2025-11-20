@@ -142,8 +142,10 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     } break;
     case e12_cmd_t::CMD_OTA: {
       p->msg_ota.release_type = (uint32_t)e12_release_t::STABLE;
-      // set the version to e.g f7f66fa_1761208916_main.bin
-      strncpy(p->msg_ota.version, "f7f66fa_1761208916_main.bin",
+      // example: set the version to e.g f7f66fa_1761208916_main.bin
+      // size : 1143296 bytes
+      p->msg_ota.size = 1143296;
+      strncpy(p->msg_ota.version, "d0117fd_1763631514_main.bin",
               sizeof(p->msg_ota.version) - 1);
       p->msg.head.len = sizeof(p->msg_ota);
     } break;

@@ -272,6 +272,7 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
   struct {
     e12_header_t head;
     uint32_t release_type;
+    uint32_t size;
     char version[E12_MAX_FIRMWARE_VERSION_LEN];
   } msg_ota;
 } e12_packet_t;
