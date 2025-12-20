@@ -62,8 +62,8 @@ uint32_t e12_demo::read_temp(DallasTemperature* sensors) {
 }
 
 int e12_demo::on_config(const char* s, int len) {
-  // called with the JSON string
-  // e.g {"v":"0.0.1","pid":48876,"vid":57005,"config":{"pin":4,"delay":1000}}
+  // called with the JSON string received from e12-node
+  // e.g {"pin":4,"on_ms":1000, "off_ms":2000}
 
   Serial.println("**********ARDUINO GOT JSON CONFIG ***********");
   Serial.println(s);
@@ -71,12 +71,8 @@ int e12_demo::on_config(const char* s, int len) {
   StaticJsonDocument<128> doc;
   deserializeJson(doc, s);
 
-  const char* v = doc["v"];
-  int vid = doc["vid"];
-  int pid = doc["pid"];
-  int pin = doc["config"]["pin"];
-  uint32_t on_delay = doc["config"]["on_ms"];
-  uint32_t off_delay = doc["config"]["off_ms"];
+  uint32_t on_delay = doc["on_ms"];
+  uint32_t off_delay = doc["off_ms"];
 
   // _pin = pin;
   _on_delay = on_delay;
@@ -84,6 +80,7 @@ int e12_demo::on_config(const char* s, int len) {
   return true;
 }
 
+// called when you publish your state to e12-node
 int e12_demo::on_get_state(char* s, int len, void* ctx) {
   Serial.println("**********ARDUINO GOT GET STATE ***********");
   StaticJsonDocument<128> doc;
@@ -94,10 +91,10 @@ int e12_demo::on_get_state(char* s, int len, void* ctx) {
   return count;
 }
 
+// called when you receive state from e12-node
 int e12_demo::on_restore_state(const char* s, int len) {
   Serial.println("**********ARDUINO RESTORE STATE ***********");
   Serial.println(s);
-  // here we expecting JSON whatever is state worth
   StaticJsonDocument<128> doc;
   deserializeJson(doc, s);
   _count = doc["count"];
@@ -105,6 +102,7 @@ int e12_demo::on_restore_state(const char* s, int len) {
   return 0;
 }
 
+// publish log events to e12-node
 int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
   e12_log_evt_t* evt = e12_arduino::get_log_evt();
   if (!evt) return -1;
@@ -128,6 +126,7 @@ int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
   return 0;
 };
 
+// demo loop to demonstrate the e12-protocol capabilities
 uint32_t e12_demo::demo() {
   int cmd = get_cmd();
   if (cmd > E12_CMD_NONE) {
@@ -200,6 +199,9 @@ uint32_t e12_demo::demo() {
     } break;
     case E12_NODE_INITIATE_OTA: {
       send(get_request(e12_cmd_t::CMD_OTA));
+    } break;
+    case E12_NODE_INITIATE_VMCU_OTA: {
+      send(get_request(e12_cmd_t::CMD_VMCU_OTA));
     } break;
     default: {
       return -1;

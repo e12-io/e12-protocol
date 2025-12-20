@@ -26,7 +26,6 @@ int e12_arduino::begin(void* bus, uint8_t e12_addr) {
 #endif
 
   _bus->begin();
-  // _bus->setClock(100000);
   _bus->setClock(100000UL);  // experimenting with 1Mhz speed
 
   // good time to make sure that e12 node is awake
@@ -48,8 +47,8 @@ int e12_arduino::set_node_auth_credentials(e12_auth_data_t* auth) {
 }
 
 int e12_arduino::on_wakeup() {
-  // do a synchronous send req/read response
-  // get CONFIG and STATE
+  // on wake up, restore your config and state
+  // from e12 node
   send(get_request(e12_cmd_t::CMD_CONFIG));
   send(get_request(e12_cmd_t::CMD_STATE));
   return 0;
@@ -57,7 +56,8 @@ int e12_arduino::on_wakeup() {
 
 int e12_arduino::sleep(uint32_t ms, void* data) {
   if (ms) {
-    Serial.println("Sending WAKE ME UP --->");
+    // Before going to sleep, inform the e12 node
+    // to schedule a wakeup interrupt on the configured pin
     e12_wakeup_data_t wakeup = {0};
     wakeup.ms = ms;
     send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
@@ -67,15 +67,13 @@ int e12_arduino::sleep(uint32_t ms, void* data) {
 
 int e12_arduino::send(e12_packet_t* buf, bool retry) {
   if (!buf) return 0;
-
-  // check the status of the e12 node
   if (get_node_status() == e12_node_op_status_t::STATUS_SLEEP) {
-    // TODO: we can initiate a wakeup
     set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
     if (retry) {
-      delay(100);  // we expect the node to become operational in 100ms
+      // typically e12-node should wake up and become
+      // operational in less than 100ms
+      delay(100);
     } else {
-      // return an error to return later
       return (int)e12_err_t::ERR_RETRY_LATER;
     }
   }
@@ -86,20 +84,18 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
 
   _bus->beginTransmission(_e12_addr);
 
-#if DEBUG
+#if 0
   Serial.print("Sending Request cmd: ");
   Serial.println((int)buf->msg.head.cmd);
-#if 0
   for (int i = 0; i < req->head.len; i++) {
     uint8_t c = req->buf[i];
     Serial.print((byte)c);
   }
   Serial.println("");
 #endif
-#endif
+
   _bus->write(req->buf, req->head.len);
   if (_bus->endTransmission() != 0) {
-    // Handle transmission error
     return -1;
   }
   return req->head.len;

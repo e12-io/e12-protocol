@@ -35,6 +35,9 @@ static const char* TAG = "e12-spec";
 e12::e12(uint32_t vid, uint32_t pid) {
   _vid = vid;
   _pid = pid;
+  _arch = mcu_arch_t::ARCH_NONE;
+  _protocol = mcu_flashing_protocol_t::PROTOCOL_NONE;
+  _mcu_flashing_enabled = false;
   _status.CONFIGURED = false;
 }
 
@@ -50,10 +53,8 @@ e12::~e12() {}
  * @return e12_onwire_t* Pointer to the encoded on-wire packet
  */
 e12_onwire_t* e12::encode(e12_packet_t* data) {
-  // NOTE: below pointer airthmetics does not work?? why??
-  // e12_onwire_t* pkt = (e12_onwire_t*)(data - sizeof(e12_onwire_head_t));
   e12_onwire_t* pkt = get_encode_buffer();
-  pkt->head.magic[0] = E12_MAGIC_MARKER_1;  // e12
+  pkt->head.magic[0] = E12_MAGIC_MARKER_1;
   pkt->head.magic[1] = E12_MAGIC_MARKER_2;
   pkt->head.len =
       sizeof(e12_onwire_head_t) + sizeof(e12_header_t) + data->msg.head.len;
@@ -144,10 +145,19 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       p->msg_ota.release_type = (uint32_t)e12_release_t::STABLE;
       // example: set the version to e.g f7f66fa_1761208916_main.bin
       // size : 1143296 bytes
-      p->msg_ota.size = 1143296;
-      strncpy(p->msg_ota.version, "d0117fd_1763631514_main.bin",
+      p->msg_ota.size = 1139696;
+      strncpy(p->msg_ota.version, "7b1ce59_1763659810_stable.bin",
               sizeof(p->msg_ota.version) - 1);
       p->msg.head.len = sizeof(p->msg_ota);
+    } break;
+    case e12_cmd_t::CMD_VMCU_OTA: {
+      if(_mcu_flashing_enabled){
+        p->msg_vmcu_ota.arch = _arch;
+        p->msg_vmcu_ota.protocol = _protocol;
+        p->msg.head.len = sizeof(p->msg_vmcu_ota);
+      }else{
+        return NULL;
+      }
     } break;
     default:
       break;
@@ -309,8 +319,7 @@ e12_packet_t* e12::decode(e12_onwire_t* pkt, uint8_t data) {
   pkt->buf[pkt->recv_len++] = data;
   if (pkt->recv_len > sizeof(e12_onwire_head_t)) {
     if (pkt->recv_len == pkt->head.len) {
-      // we received the full packet. We can do the checksum
-      // validation
+      // we received the full packet. We can do the checksum validation
       pkt->recv_len = 0;
       uint8_t checksum =
           get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
@@ -326,7 +335,6 @@ e12_packet_t* e12::decode(e12_onwire_t* pkt, uint8_t data) {
       return &pkt->data;
     }
   } else if (pkt->recv_len == E12_MAGIC_MARKER_LEN) {
-    // we should check if we got the magic headers
     if (pkt->head.magic[0] != E12_MAGIC_MARKER_1 &&
         pkt->head.magic[1] != E12_MAGIC_MARKER_2) {
       pkt->recv_len = 0;

@@ -35,16 +35,17 @@ static uint8_t event_flag = 0x00;
 #if ARDUINO_RASPBERRY_PI_PICO
 struct repeating_timer timer_blink;
 struct repeating_timer timer_temp;
-bool timer_callback_blink(struct repeating_timer *t) {
+bool timer_callback_blink(struct repeating_timer* t) {
   event_flag |= 0x01;
   return true;
 }
 
-bool timer_callback_temp(struct repeating_timer *t) {
+bool timer_callback_temp(struct repeating_timer* t) {
   event_flag |= (0x01 << 1);
   return true;
 }
 #elif ARDUINO_SAMD_ZERO  //__SAMD21__
+#warning "SAMD_ZERO: Using fast_samd21 library for timers"
 #include <fast_samd21_tc3.h>
 #include <fast_samd21_tc4_tc5.h>
 
@@ -92,8 +93,14 @@ void setup() {
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 #elif ARDUINO_SAMD_ZERO
-  fast_samd21_tc3_configure(1000000);  // blink every 1 sec
-  fast_samd21_tc4_tc5_configure(5000000);
+  fast_samd21_tc3_configure(60000000);  // blink every 1min sec
+  fast_samd21_tc4_tc5_configure(120000000);
+  
+  // enable MCU flashing by e12-node
+  // you can do other fancy things like need for physically pressing
+  // a button etc.
+  demo.set_mcu_family(mcu_arch_t::ARCH_SAMD21,
+                      mcu_flashing_protocol_t::PROTOCOL_BOSSA, true);
 #else
 #warning "No timer code defined for this board"
 #endif
@@ -127,8 +134,8 @@ void loop() {
         //        e12_auth_data_t auth = {.AUTH_WIFI = true};
         e12_auth_data_t auth = {0};
         auth.AUTH_WIFI = true;
-        strcpy(auth.wifi.ssid, "WWZ-444703");
-        strcpy(auth.wifi.pwd, "FNA7UQGAP7V7B3");
+        strcpy(auth.wifi.ssid, "SSID");
+        strcpy(auth.wifi.pwd, "SSID_PASSWORD");
         demo.set_node_auth_credentials(&auth);
       } break;
       default:
@@ -139,7 +146,7 @@ void loop() {
 
   if (e12_read_msg) {
     demo.on_receive(demo.read());
-#if DEBUG
+#if 0
     digitalWrite(ledPin, false);
 #endif
     e12_read_msg = false;
@@ -149,11 +156,11 @@ void loop() {
   while (event_flag && mask != 0) {
     switch ((event_flag & mask)) {
       case EVT_BLINK: {
-        // Serial.println("Executing: blink");
+        Serial.println("Executing: blink");
         demo.blink();
       } break;
       case EVT_TEMP: {
-        // Serial.println("Executing: Read temperature");
+        Serial.println("Executing: Read temperature");
         demo.read_temp(&sensors);
       } break;
     }

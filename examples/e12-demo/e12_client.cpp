@@ -41,31 +41,26 @@ to Wire library: Wire.h and twi.h
 #define DEBUG 1
 #define WAKEUP_INTR 0
 
-// NOTE: here can be used to debug. In most cases not needed
 int e12_client::send(e12_packet_t* buf, bool retry) {
   // TODO: here you can write some debug/forensic on
-  // buffer aka wireshark
+  // buffer ready to be sent aka wireshark
   e12_arduino::send(buf, retry);
   return 0;
 }
 
-static void wakeme_up_from_sleep() {
-  Serial.println("**********WHO WOKE ME UP ?***********");
-}
+static void wakeme_up_from_sleep() {}
 
 int e12_client::wakeup_e12_node() {
-  Serial.println("**********WAKE UP e12 ***********");
   // Briefly pulse the pin HIGH then LOW
-
   pinMode(WAKEUP_INTR_PIN, OUTPUT);
   digitalWrite(WAKEUP_INTR_PIN, HIGH);
-  delay(10);
+  delay(10);  // 10ms
   digitalWrite(WAKEUP_INTR_PIN, LOW);
   return 0;
 };
 
 int e12_client::sleep(uint32_t ms, void* data) {
-  Serial.println("e12_client::sleep");
+  Serial.println(__func__);
   int err = e12_arduino::sleep(ms, data);
   if (err) return err;
 
@@ -112,7 +107,7 @@ int e12_client::on_receive(e12_packet_t* p) {
 
   e12_arduino::on_receive(p);
 
-#if DEBUG
+#if 0
   if (p->msg.head.IS_RESPONSE) {
     Serial.print("Received Response for cmd: ");
     Serial.println((int)p->msg.head.cmd);

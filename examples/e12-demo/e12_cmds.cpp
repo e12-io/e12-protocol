@@ -39,9 +39,10 @@ void print_help() {
   Serial.println("13 : Instruct e12 to TRANSMIT - NOW");
   Serial.println("14 : Send WAKEUP instruction to e12 node");
   Serial.println("15 : Ask e12 node to initiate OTA");
-  Serial.println("16 : e12 node please DISABLE SLEEP");
-  Serial.println("17 : set logmask for e12 node");
-  Serial.println("18 : e12 node please BLINK");
+  Serial.println("16 : Initiate VMCU Flashing");
+  Serial.println("17 : e12 node please DISABLE SLEEP");
+  Serial.println("18 : set logmask for e12 node");
+  Serial.println("19 : e12 node please BLINK");
 }
 
 #define MAX_CMD_LEN 32

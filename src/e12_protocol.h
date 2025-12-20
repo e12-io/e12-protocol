@@ -57,8 +57,10 @@ enum class e12_cmd_t : uint8_t {
   CMD_SCHEDULE_WAKEUP,
   /// typically sent by e12 node intending to go to sleep
   CMD_NODE_SLEEP,
-  /// request initiation of OTA [currently not implemented]
+  /// request initiation of OTA
   CMD_OTA,
+  /// request initiation of VMCU OTA
+  CMD_VMCU_OTA,
   /// set various e12 node properties e.g logmask,
   /// activating captive portal etc
   CMD_SET_NODE_PROPERTIES,
@@ -104,7 +106,26 @@ enum class e12_node_op_status_t : uint8_t {
   STATUS_NONE = 0,
   STATUS_ACTIVE,
   STATUS_SLEEP,
-  STATUS_OTA
+  STATUS_OTA,
+  STATUS_VMCU_OTA
+};
+
+/**
+ * @brief Supported MCU architecture
+ */
+enum class mcu_arch_t : uint8_t {
+  ARCH_NONE = 0,
+  ARCH_ATMEGA328,
+  ARCH_SAMD21
+};
+
+/**
+ * @brief Supported MCU flashing protocols architecture
+ */
+enum class mcu_flashing_protocol_t : uint8_t {
+  PROTOCOL_NONE = 0,
+  PROTOCOL_STK500,
+  PROTOCOL_BOSSA
 };
 
 #define E12_MAX_LOG_BUFFERS 1
@@ -275,6 +296,11 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
     uint32_t size;
     char version[E12_MAX_FIRMWARE_VERSION_LEN];
   } msg_ota;
+  struct {
+    e12_header_t head;
+    mcu_arch_t arch;
+    mcu_flashing_protocol_t protocol;
+  } msg_vmcu_ota;
 } e12_packet_t;
 
 typedef union __attribute__((packed, aligned(4))) e12_onwire {
@@ -319,6 +345,9 @@ class e12 {
   uint32_t _pid;             ///< Product ID
   uint32_t _version;         ///< Version of the e12 protocol
   e12_node_state_t _status;  ///< Status of the e12 node
+  mcu_arch_t _arch;
+  mcu_flashing_protocol_t _protocol;
+  bool _mcu_flashing_enabled;
 
   e12_onwire_t _encode_buf;  ///< Buffer for encoding packets
   e12_onwire_t _decode_buf;  ///< Buffer for decoding packets
@@ -412,6 +441,21 @@ class e12 {
   void set_product_info(uint32_t vid, uint32_t pid) {
     _vid = vid;
     _pid = pid;
+  }
+
+  /**
+   * @brief Set the mcu family object
+   * 
+   * @param arch 
+   * @param protocol 
+   * @param enabled 
+   */
+  void set_mcu_family(mcu_arch_t arch,
+                      mcu_flashing_protocol_t protocol,
+                      bool enabled) {
+    _arch = arch;
+    _protocol = protocol;
+    _mcu_flashing_enabled = enabled;
   }
 
   /**
