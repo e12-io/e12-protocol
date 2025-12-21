@@ -201,6 +201,8 @@ uint32_t e12_demo::demo() {
       send(get_request(e12_cmd_t::CMD_OTA));
     } break;
     case E12_NODE_INITIATE_VMCU_OTA: {
+      Serial.println("Waiting 10 sec before initiating VMCU OTA .. remove Serial cable");
+      delay(10000);
       send(get_request(e12_cmd_t::CMD_VMCU_OTA));
     } break;
     default: {
