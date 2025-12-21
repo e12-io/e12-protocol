@@ -71,13 +71,13 @@ DallasTemperature sensors(&oneWire);
 #define E12_INTR_PIN 3
 
 #define DEBUG 1
-#if DEBUG
+#ifdef DEBUG
 const byte ledPin = LED_BUILTIN;
 #endif
 
 volatile byte e12_read_msg = false;
 void e12_intr_handler() {
-#if DEBUG
+#ifdef DEBUG
   digitalWrite(ledPin, true);
 #endif
   e12_read_msg = true;
