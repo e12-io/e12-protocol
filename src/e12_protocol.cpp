@@ -37,6 +37,7 @@ e12::e12(uint32_t vid, uint32_t pid) {
   _pid = pid;
   _arch = mcu_arch_t::ARCH_NONE;
   _protocol = mcu_flashing_protocol_t::PROTOCOL_NONE;
+  _mcu_fwr_version = 0;
   _mcu_flashing_enabled = false;
   _status.CONFIGURED = false;
 }
@@ -45,6 +46,15 @@ e12::e12(uint32_t vid, uint32_t pid) {
  * @brief Destroy the e12 object
  */
 e12::~e12() {}
+
+/**
+ * @brief Publish info e.g fwr version, arch, protocol etc
+ *
+ * @return int
+ */
+int e12::publish_info() {
+  return send(get_request(e12_cmd_t::CMD_INFO));
+}
 
 /**
  * @brief Encode the given data into an on-wire packet
@@ -74,6 +84,7 @@ void e12::set_node_properties(e12_node_properties_t* props) {
 
 #define STR_PING "ping"
 #define STR_PONG "pong"
+#define MAX_JSON_STATE_BUFFER_SIZE 96
 
 /**
  * @brief Get a request packet for the given command
@@ -133,10 +144,16 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     case e12_cmd_t::CMD_STATE: {
       e12_data_t* s = (e12_data_t*)p->msg.data;
       s->IS_JSON = true;
-      p->msg.head.len = 1;
+      p->msg.head.len = 1+4; // IS_JSON + ts_ms
       if (data) {
         s->STORE = true;
-        p->msg.head.len += on_get_state((char*)s->data, sizeof(s->data), data);
+        int len = on_get_state((char*)s->data, MAX_JSON_STATE_BUFFER_SIZE, data);
+        if (len < MAX_JSON_STATE_BUFFER_SIZE) {
+          p->msg.head.len += len;
+        } else {
+          // error, state messages can not be more than 96 bytes
+          return NULL;
+        }
       } else {
         s->FETCH = true;
       }
@@ -150,10 +167,15 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
               sizeof(p->msg_ota.version) - 1);
       p->msg.head.len = sizeof(p->msg_ota);
     } break;
+    case e12_cmd_t::CMD_INFO: {
+      p->msg_info.version = _mcu_fwr_version;
+      p->msg_info.arch = _arch;
+      p->msg_info.protocol = _protocol;
+      p->msg_info.flashing_enabled = _mcu_flashing_enabled;
+      p->msg.head.len = sizeof(p->msg_info);
+    } break;
     case e12_cmd_t::CMD_VMCU_OTA: {
       if(_mcu_flashing_enabled){
-        p->msg_vmcu_ota.arch = _arch;
-        p->msg_vmcu_ota.protocol = _protocol;
         p->msg.head.len = sizeof(p->msg_vmcu_ota);
       }else{
         return NULL;

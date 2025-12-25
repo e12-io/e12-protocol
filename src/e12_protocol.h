@@ -44,6 +44,8 @@ enum class e12_cmd_t : uint8_t {
   /// used to pass authentication credential for e.g WiFi or LTE etc
   CMD_AUTH,
   /// used to request vendor specific configuration
+  CMD_INFO,
+  /// used to request vendor specific configuration
   CMD_CONFIG,
   /// used to either send or request vendor state from e12 node
   CMD_STATE,
@@ -298,8 +300,13 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
   } msg_ota;
   struct {
     e12_header_t head;
+    uint32_t version;
     mcu_arch_t arch;
     mcu_flashing_protocol_t protocol;
+    bool flashing_enabled;
+  } msg_info;
+  struct {
+    e12_header_t head;
   } msg_vmcu_ota;
 } e12_packet_t;
 
@@ -321,7 +328,8 @@ typedef struct __attribute__((packed, aligned(4))) e12_data {
   uint8_t STORE : 1;
   uint8_t FETCH : 1;
   uint8_t : 0;
-  uint8_t data[E12_MAX_CMD_DATA_PAYLOAD - 1];
+  uint32_t ts_ms;
+  uint8_t data[E12_MAX_CMD_DATA_PAYLOAD - 5];
 } e12_data_t;
 
 typedef struct __attribute__((packed, aligned(4))) e12_device {
@@ -345,6 +353,7 @@ class e12 {
   uint32_t _pid;             ///< Product ID
   uint32_t _version;         ///< Version of the e12 protocol
   e12_node_state_t _status;  ///< Status of the e12 node
+  uint32_t _mcu_fwr_version;         ///< Version of the e12 protocol
   mcu_arch_t _arch;
   mcu_flashing_protocol_t _protocol;
   bool _mcu_flashing_enabled;
@@ -444,20 +453,36 @@ class e12 {
   }
 
   /**
-   * @brief Set the mcu family object
+   * @brief Set the vmcu firmware details object
    * 
    * @param arch 
    * @param protocol 
    * @param enabled 
    */
-  void set_mcu_family(mcu_arch_t arch,
-                      mcu_flashing_protocol_t protocol,
-                      bool enabled) {
+  void set_fwr_details(uint32_t fwr_version, mcu_arch_t arch,
+                      mcu_flashing_protocol_t protocol, bool enabled) {
+    _mcu_fwr_version = fwr_version;
     _arch = arch;
     _protocol = protocol;
     _mcu_flashing_enabled = enabled;
   }
 
+  /**
+   * @brief Get the fwr version object
+   * 
+   * @return uint32_t 
+   */
+  uint32_t get_fwr_version() {
+    return _mcu_fwr_version;
+  }
+
+  /**
+   * @brief Publish info e.g fwr version, arch, protocol etc
+   *
+   * @return int
+   */
+  int publish_info();
+  
   /**
    * @brief Sets the properties of the e12 node.
    * @param props Pointer to the node properties

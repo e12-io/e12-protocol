@@ -23,26 +23,26 @@
 
 void print_help() {
   Serial.println("Welcome to e12 demo ....");
-  Serial.println(
-      "1: Print this help message. Enter option number to trigger action !");
+  Serial.println("1: Print this help message. Enter option number to trigger action !");
   Serial.println("2 : Send PING to e12 node");
   Serial.println("3 : Send STATE to e12 node");
-  Serial.println("4 : Fetch my CONFIG from e12 node");
-  Serial.println("5 : Refresh CONFIG from e12 server");
-  Serial.println("6 : Send AUTH data to e12 node");
-  Serial.println("7 : send WiFi Auth to e12 node");
-  Serial.println("8 : WAKE ME UP after 10 sec");
-  Serial.println("9 : Send a LOG event to e12 node");
-  Serial.println("10 : get Time from e12 node");
-  Serial.println("11 : Instruct e12 node to ACTIVATE AP");
-  Serial.println("12 : Get e12 node STATUS");
-  Serial.println("13 : Instruct e12 to TRANSMIT - NOW");
-  Serial.println("14 : Send WAKEUP instruction to e12 node");
-  Serial.println("15 : Ask e12 node to initiate OTA");
-  Serial.println("16 : Initiate VMCU Flashing");
-  Serial.println("17 : e12 node please DISABLE SLEEP");
-  Serial.println("18 : set logmask for e12 node");
-  Serial.println("19 : e12 node please BLINK");
+  Serial.println("4 : Send mcu info");
+  Serial.println("5 : Fetch my CONFIG from e12 node");
+  Serial.println("6 : Refresh CONFIG from e12 server");
+  Serial.println("7 : Send AUTH data to e12 node");
+  Serial.println("8 : send WiFi Auth to e12 node");
+  Serial.println("9 : WAKE ME UP after 10 sec");
+  Serial.println("10 : Send a LOG event to e12 node");
+  Serial.println("11 : get Time from e12 node");
+  Serial.println("12 : Instruct e12 node to ACTIVATE AP");
+  Serial.println("13 : Get e12 node STATUS");
+  Serial.println("14 : Instruct e12 to TRANSMIT - NOW");
+  Serial.println("15 : Send WAKEUP instruction to e12 node");
+  Serial.println("16 : Ask e12 node to initiate OTA");
+  Serial.println("17 : Initiate VMCU Flashing");
+  Serial.println("18 : e12 node please DISABLE SLEEP");
+  Serial.println("19 : set logmask for e12 node");
+  Serial.println("20 : e12 node please BLINK");
 }
 
 #define MAX_CMD_LEN 32

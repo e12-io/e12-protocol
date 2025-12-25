@@ -81,12 +81,14 @@ int e12_demo::on_config(const char* s, int len) {
 }
 
 // called when you publish your state to e12-node
+// NOTE: cannot be more than 96 bytes of JSON
 int e12_demo::on_get_state(char* s, int len, void* ctx) {
   Serial.println("**********ARDUINO GOT GET STATE ***********");
-  StaticJsonDocument<128> doc;
+  StaticJsonDocument<96> doc;
   doc["count"] = _count;
   doc["on"] = _on;
   int count = serializeJson(doc, s, len);
+  Serial.print(count);
   Serial.println(s);
   return count;
 }
@@ -95,7 +97,7 @@ int e12_demo::on_get_state(char* s, int len, void* ctx) {
 int e12_demo::on_restore_state(const char* s, int len) {
   Serial.println("**********ARDUINO RESTORE STATE ***********");
   Serial.println(s);
-  StaticJsonDocument<128> doc;
+  StaticJsonDocument<96> doc;
   deserializeJson(doc, s);
   _count = doc["count"];
   _on = doc["on"];
@@ -142,11 +144,15 @@ uint32_t e12_demo::demo() {
     } break;
     case E12_SEND_STATE: {
       Serial.println("Executing: sending state to e12 node");
-      send(get_request(e12_cmd_t::CMD_STATE));
+      send(get_request(e12_cmd_t::CMD_STATE, true, (void*)true));
     } break;
     case E12_FETCH_CONFIG: {
       Serial.println("Executing: Request config from e12 node");
       send(get_request(e12_cmd_t::CMD_CONFIG));
+    } break;
+    case E12_SEND_INFO: {
+      Serial.println("Executing: Publishing vmcu info");
+      send(get_request(e12_cmd_t::CMD_INFO));
     } break;
     case E12_GET_TIME: {
       Serial.println("Executing: Requesting TIME from e12 node");
@@ -201,8 +207,8 @@ uint32_t e12_demo::demo() {
       send(get_request(e12_cmd_t::CMD_OTA));
     } break;
     case E12_NODE_INITIATE_VMCU_OTA: {
-      Serial.println("Waiting 10 sec before initiating VMCU OTA .. remove Serial cable");
-      delay(10000);
+      Serial.println("Executing: VMCU OTA ... disconnect Serial");
+      delay(5000);
       send(get_request(e12_cmd_t::CMD_VMCU_OTA));
     } break;
     default: {

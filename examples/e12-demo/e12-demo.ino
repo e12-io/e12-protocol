@@ -76,6 +76,7 @@ const byte ledPin = LED_BUILTIN;
 #endif
 
 volatile byte e12_read_msg = false;
+volatile byte published_info = false;
 void e12_intr_handler() {
 #ifdef DEBUG
   digitalWrite(ledPin, true);
@@ -89,6 +90,7 @@ static void e12_intr() {
 }
 
 void setup() {
+  const uint32_t version = 0x00010001;  // version 1.0.0
 #ifdef ARDUINO_RASPBERRY_PI_PICO
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
@@ -99,13 +101,15 @@ void setup() {
   // enable MCU flashing by e12-node
   // you can do other fancy things like need for physically pressing
   // a button etc.
-  demo.set_mcu_family(mcu_arch_t::ARCH_SAMD21,
-                      mcu_flashing_protocol_t::PROTOCOL_BOSSA, true);
+
+  demo.set_fwr_details(version, mcu_arch_t::ARCH_SAMD21,
+                       mcu_flashing_protocol_t::PROTOCOL_BOSSA, true);
 #else
 #warning "No timer code defined for this board"
 #endif
 
   Serial.begin(115200);
+  Serial.println("e12 Demo (version): 1.0.1");
   demo.begin(&Wire, E12_BUS_ADDRESS);
   sensors.begin();
 
@@ -150,6 +154,10 @@ void loop() {
     digitalWrite(ledPin, false);
 #endif
     e12_read_msg = false;
+    if (!published_info){
+      demo.publish_info();
+      published_info = true;
+    } 
   }
 
   uint8_t mask = 0x01;
