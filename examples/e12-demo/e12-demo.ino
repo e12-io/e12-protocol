@@ -90,7 +90,7 @@ static void e12_intr() {
 }
 
 void setup() {
-  const uint32_t version = 0x00010001;  // version 1.0.0
+  const uint32_t version = 0x00010002;  // version 1.0.2
 #ifdef ARDUINO_RASPBERRY_PI_PICO
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);

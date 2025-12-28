@@ -71,8 +71,8 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
     set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
     if (retry) {
       // typically e12-node should wake up and become
-      // operational in less than 100ms
-      delay(100);
+      // operational in less than 300ms
+      delay(500);
     } else {
       return (int)e12_err_t::ERR_RETRY_LATER;
     }
