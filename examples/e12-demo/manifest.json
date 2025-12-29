@@ -1,4 +1,4 @@
-"metadata": {
+{
     "binary_path": "./e12-demo.1.0.3.bin",
     "signature_path": "./e12-demo.1.0.3.sig",
     "flashing_protocol": "bossa",
@@ -6,4 +6,4 @@
     "version": "1.0.3",
     "build_date": "2025-12-29",
     "description": "e12 demo vmcu firmware",
-},
+}
