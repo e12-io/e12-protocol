@@ -59,6 +59,8 @@ enum class e12_cmd_t : uint8_t {
   CMD_SCHEDULE_WAKEUP,
   /// typically sent by e12 node intending to go to sleep
   CMD_NODE_SLEEP,
+  /// typically sent by e12 node when it powers on or wake up from sleep
+  CMD_NODE_AWAKE,
   /// request initiation of OTA
   CMD_OTA,
   /// request initiation of VMCU OTA

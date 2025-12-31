@@ -49,6 +49,7 @@ int e12_arduino::set_node_auth_credentials(e12_auth_data_t* auth) {
 int e12_arduino::on_wakeup() {
   // on wake up, restore your config and state
   // from e12 node
+  send(get_request(e12_cmd_t::CMD_INFO));
   send(get_request(e12_cmd_t::CMD_CONFIG));
   send(get_request(e12_cmd_t::CMD_STATE));
   return 0;

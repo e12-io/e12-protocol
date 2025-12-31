@@ -118,10 +118,6 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       p->msg_node_props.props.data = props->data;
       p->msg.head.len = sizeof(e12_node_properties_t);
     } break;
-    case e12_cmd_t::CMD_TIME: {
-    } break;
-    case e12_cmd_t::CMD_CONFIG: {
-    } break;
     case e12_cmd_t::CMD_LOG: {
       e12_log_evt_t* log = (e12_log_evt_t*)data;
       p->msg.head.len = sizeof(e12_log_evt_t);
@@ -181,6 +177,9 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
         return NULL;
       }
     } break;
+    case e12_cmd_t::CMD_NODE_AWAKE: 
+    case e12_cmd_t::CMD_TIME:
+    case e12_cmd_t::CMD_CONFIG:
     default:
       break;
   }
@@ -317,6 +316,9 @@ int e12::on_receive(e12_packet_t* p) {
         return 0;
       }
     } break;
+    case e12_cmd_t::CMD_NODE_AWAKE: {
+      set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
+    } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
       uint32_t ms = p->msg_sleep.ms;
       if (ms) {
@@ -389,7 +391,9 @@ e12_node_op_status_t e12::get_node_status() {
       break;
     case e12_node_op_status_t::STATUS_SLEEP:
       if (get_time_ms() > _status.node_wake_up_ms) {
-        return set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
+        // for some reason we think e12 node is still not active then
+        // lets wake it up
+        wakeup_e12_node();
       }
       break;
     default:
@@ -411,7 +415,7 @@ e12_node_op_status_t e12::set_node_status(e12_node_op_status_t status,
   switch (status) {
     case e12_node_op_status_t::STATUS_ACTIVE:
       _status.node_wake_up_ms = 0;
-      wakeup_e12_node();
+      on_wakeup();
       break;
     case e12_node_op_status_t::STATUS_SLEEP:
       _status.node_wake_up_ms = data + get_time_ms();
