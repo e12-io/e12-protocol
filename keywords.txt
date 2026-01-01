@@ -1,0 +1,96 @@
+#######################################
+# Datatypes and Classes (KEYWORD1)
+#######################################
+e12	KEYWORD1
+e12_arduino	KEYWORD1
+e12_event_t	KEYWORD1
+e12_cmd_t	KEYWORD1
+e12_release_t	KEYWORD1
+e12_err_t	KEYWORD1
+e12_evt_status_t	KEYWORD1
+e12_node_op_status_t	KEYWORD1
+mcu_arch_t	KEYWORD1
+mcu_flashing_protocol_t	KEYWORD1
+e12_log_evt_t	KEYWORD1
+e12_wakeup_data_t	KEYWORD1
+e12_debug_blink_t	KEYWORD1
+e12_node_properties_t	KEYWORD1
+e12_auth_data_t	KEYWORD1
+e12_node_state_t	KEYWORD1
+e12_header_t	KEYWORD1
+e12_onwire_head_t	KEYWORD1
+e12_packet_t	KEYWORD1
+e12_onwire_t	KEYWORD1
+e12_data_t	KEYWORD1
+e12_device_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+e12_run	KEYWORD2
+close	KEYWORD2
+e12_get_packet	KEYWORD2
+encode	KEYWORD2
+decode	KEYWORD2
+set_e12_device	KEYWORD2
+set_product_info	KEYWORD2
+set_fwr_details	KEYWORD2
+get_fwr_version	KEYWORD2
+publish_info	KEYWORD2
+set_node_properties	KEYWORD2
+set_timeout	KEYWORD2
+is_configured	KEYWORD2
+set_configured	KEYWORD2
+get_version	KEYWORD2
+set_version	KEYWORD2
+get_request	KEYWORD2
+get_response	KEYWORD2
+get_message	KEYWORD2
+get_checksum	KEYWORD2
+on_receive	KEYWORD2
+wakeup_e12_node	KEYWORD2
+print_buffer	KEYWORD2
+get_time_ms	KEYWORD2
+get_log_evt	KEYWORD2
+send	KEYWORD2
+read	KEYWORD2
+sleep	KEYWORD2
+log	KEYWORD2
+on_wakeup	KEYWORD2
+set_node_auth_credentials	KEYWORD2
+on_config	KEYWORD2
+on_get_state	KEYWORD2
+on_restore_state	KEYWORD2
+
+#######################################
+# Constants and Enumerators (LITERAL1)
+#######################################
+E12_MAX_PKT_SIZE	LITERAL1
+E12_MAX_DATA_PAYLOAD	LITERAL1
+CMD_PING	LITERAL1
+CMD_AUTH	LITERAL1
+CMD_INFO	LITERAL1
+CMD_CONFIG	LITERAL1
+CMD_STATE	LITERAL1
+CMD_STATUS	LITERAL1
+CMD_LOG	LITERAL1
+CMD_TIME	LITERAL1
+CMD_SCHEDULE_WAKEUP	LITERAL1
+CMD_NODE_SLEEP	LITERAL1
+CMD_NODE_AWAKE	LITERAL1
+CMD_OTA	LITERAL1
+CMD_VMCU_OTA	LITERAL1
+STABLE	LITERAL1
+CANARY	LITERAL1
+DEV	LITERAL1
+ERR_NONE	LITERAL1
+ERR_RETRY_LATER	LITERAL1
+STATUS_DONE	LITERAL1
+STATUS_NEW	LITERAL1
+STATUS_ACTIVE	LITERAL1
+STATUS_SLEEP	LITERAL1
+ARCH_ATMEGA328	LITERAL1
+ARCH_SAMD21	LITERAL1
+PROTOCOL_STK500	LITERAL1
+PROTOCOL_BOSSA	LITERAL1
