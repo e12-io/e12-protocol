@@ -18,9 +18,7 @@ int e12_arduino::begin(void* bus, uint8_t e12_addr) {
   _timeout = MAX_RESP_TIMEOUT;
   _evt_count = 0;
 
-#ifdef ARDUINO_SAMD_ZERO  //__SAMD21__
-  // default is 20, 21
-#else
+#ifdef ARDUINO_RASPBERRY_PI_PICO
   _bus->setSDA(20);
   _bus->setSCL(21);
 #endif
@@ -69,10 +67,14 @@ int e12_arduino::sleep(uint32_t ms, void* data) {
 int e12_arduino::send(e12_packet_t* buf, bool retry) {
   if (!buf) return 0;
   if (get_node_status() == e12_node_op_status_t::STATUS_SLEEP) {
-    set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
     if (retry) {
+      // TODO: based on available memory
+      // we could buffer these packets and send when
+      // the e12 node is awake.
+      
       // typically e12-node should wake up and become
       // operational in less than 300ms
+      wakeup_e12_node();
       delay(500);
     } else {
       return (int)e12_err_t::ERR_RETRY_LATER;
@@ -86,13 +88,11 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
   _bus->beginTransmission(_e12_addr);
 
 #if 0
-  Serial.print("Sending Request cmd: ");
-  Serial.println((int)buf->msg.head.cmd);
+  E12_PRINT_F("Sending Request cmd: %d", (int)buf->msg.head.cmd);
   for (int i = 0; i < req->head.len; i++) {
     uint8_t c = req->buf[i];
     Serial.print((byte)c);
   }
-  Serial.println("");
 #endif
 
   _bus->write(req->buf, req->head.len);
@@ -105,8 +105,7 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
 e12_packet_t* e12_arduino::read() {
   int num = _bus->requestFrom(_e12_addr, (uint8_t)sizeof(e12_onwire_t));
 #if 0
-  Serial.print("e12_arduino::read() : ");
-  Serial.println(num);
+  E12_PRINT_F("e12_arduino::read(): %d", num);
 #endif
   if (!num) return NULL;
 

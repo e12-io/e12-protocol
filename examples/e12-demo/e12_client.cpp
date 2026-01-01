@@ -16,7 +16,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <ArduinoJson.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #include <avr/sleep.h>
@@ -60,7 +59,7 @@ int e12_client::wakeup_e12_node() {
 };
 
 int e12_client::sleep(uint32_t ms, void* data) {
-  Serial.println(__func__);
+  E12_PRINTLN(__func__);
   int err = e12_arduino::sleep(ms, data);
   if (err) return err;
 
@@ -71,8 +70,8 @@ int e12_client::sleep(uint32_t ms, void* data) {
   sleep_enable();
   // use interrupt 0 (pin 2)
   attachInterrupt(WAKEUP_INTR, wakeme_up_from_sleep, LOW);
-  Serial.print("Arduino - I SLEEP : ");
-  Serial.println(get_time_ms());
+
+  E12_PRINT_F("Arduino - I SLEEP : (%d)", get_time_ms());
 
   sleep_mode();
 
@@ -80,8 +79,8 @@ int e12_client::sleep(uint32_t ms, void* data) {
   sleep_disable();
   detachInterrupt(WAKEUP_INTR);
   power_all_enable();  // Re-enable the peripherals.
-  Serial.print("Arduino - wakeup after sleep : ");
-  Serial.println(get_time_ms());
+
+  E12_PRINT_F("Arduino - woke up after : (%d)", get_time_ms());
 
   on_wakeup();
 #else
@@ -109,35 +108,31 @@ int e12_client::on_receive(e12_packet_t* p) {
 
 #if 0
   if (p->msg.head.IS_RESPONSE) {
-    Serial.print("Received Response for cmd: ");
-    Serial.println((int)p->msg.head.cmd);
+    E12_PRINT_F("Received Response for cmd : (%d)", (int)p->msg.head.cmd);
   } else {
-    Serial.print("Received Request cmd: ");
-    Serial.println((int)p->msg.head.cmd);
+    E12_PRINT_F("Received Request cmd : (%d)", (int)p->msg.head.cmd);
   }
 #endif
 
   switch (p->msg.head.cmd) {
     case e12_cmd_t::CMD_PING: {
-      Serial.println((char*)p->msg.data);
+      E12_PRINTLN((char*)p->msg.data);
     } break;
     case e12_cmd_t::CMD_TIME: {
       uint32_t ms = p->msg_time.ms;
-      Serial.print("Received Time ms: ");
-      Serial.println(ms);
+      E12_PRINT_F("Received Time ms : (%u)", ms);
     } break;
     case e12_cmd_t::CMD_CONFIG: {
-      Serial.println("Recieved CONFIG");
+      E12_PRINTLN("Recieved CONFIG");
     } break;
     case e12_cmd_t::CMD_STATE: {
-      Serial.println("Recieved STATE");
+      E12_PRINTLN("Recieved STATE");
     } break;
     case e12_cmd_t::CMD_SCHEDULE_WAKEUP: {
-      Serial.println("OK");
+      E12_PRINTLN("OK");
     } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
-      Serial.print("CMD_NODE_SLEEP: ");
-      Serial.println(p->msg_sleep.ms);
+      E12_PRINT_F("CMD_NODE_SLEEP: (%u)", p->msg_sleep.ms);
     } break;
   }
 

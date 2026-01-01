@@ -29,8 +29,37 @@
 #define E12_INTR_PIN 2
 #define WAKEUP_INTR_PIN 22
 #define ONE_WIRE_BUS 15
-#include "pico/stdlib.h"
+#include "pico/stdlib.h"        // For standard functions
+#include "pico/time.h"          // Specifically for repeating timers
+#elif defined(ARDUINO_AVR_UNO)  // Standard Arduino Uno (ATmega328P)
+#warning "Standard Uno AVR detected"
+#define E12_INTR_PIN 2
+#define WAKEUP_INTR_PIN 3
+#define ONE_WIRE_BUS 4
 #else
+#endif
+
+#ifdef __AVR__
+#define NODE_DEBUG 0
+#else
+#define NODE_DEBUG 1
+#endif
+
+
+#if NODE_DEBUG
+#define E12_PRINT(x) Serial.print(F(x))
+#define E12_PRINTLN(x) Serial.println(F(x))
+#define E12_PRINT_F(format, ...)                               \
+  {                                                            \
+    char buf[64];                                              \
+    snprintf_P(buf, sizeof(buf), PSTR(format), ##__VA_ARGS__); \
+    Serial.println(buf);                                       \
+  }
+#else
+// On Uno, these consume ZERO RAM and ZERO Flash
+#define E12_PRINT(x)
+#define E12_PRINTLN(x)
+#define E12_PRINT_F(format, ...)
 #endif
 
 #endif

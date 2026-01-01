@@ -321,6 +321,7 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire {
     uint8_t : 0;
     uint8_t recv_len;
     uint8_t resv;
+    uint8_t resv1;
     uint32_t ts;
   };
 } e12_onwire_t;

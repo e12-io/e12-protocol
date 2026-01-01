@@ -16,7 +16,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <ArduinoJson.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #include <avr/sleep.h>
@@ -26,6 +25,17 @@
 #include "e12_cmds.h"
 #include "e12_demo.h"
 #include "e12_variants.h"
+
+static long json_get_val(const char* s, const char* key) {
+  const char* ptr = strstr(s, key);
+  if (!ptr) return 0;
+  ptr += strlen(key);
+  while (*ptr && (*ptr == ':' || *ptr == ' ' || *ptr == '\"')) {
+    ptr++;
+  }
+
+  return atol(ptr);
+}
 
 e12_demo::e12_demo(uint32_t vid, uint32_t pid) : e12_client(vid, pid) {
   _on = false;
@@ -51,58 +61,48 @@ uint32_t e12_demo::blink() {
 uint32_t e12_demo::read_temp(DallasTemperature* sensors) {
   sensors->requestTemperatures();
   float tempC = sensors->getTempCByIndex(0);
-  Serial.print("Temp Sensor ( ");
-  Serial.print(0);
-  Serial.print(") : ");
-  Serial.print(tempC);
-  Serial.println("C");
+  E12_PRINT_F("Temp Sensor (%d) : %dC", 0, (int)tempC);
   log((uint8_t)EVT_TEMP, (uint8_t)e12_evt_status_t::STATUS_DONE, get_time_ms(),
       (void*)&tempC);
   return 0;
 }
 
+
 int e12_demo::on_config(const char* s, int len) {
-  // called with the JSON string received from e12-node
-  // e.g {"pin":4,"on_ms":1000, "off_ms":2000}
+  // s = {"pin":4,"on_ms":1000, "off_ms":2000}
+  E12_PRINTLN("**********ARDUINO GOT JSON CONFIG ***********");
+  E12_PRINTLN(s);
 
-  Serial.println("**********ARDUINO GOT JSON CONFIG ***********");
-  Serial.println(s);
+  _on_delay = json_get_val(s, "\"on_ms\"");
+  _off_delay = (uint8_t)json_get_val(s, "\"off_ms\"");
 
-  StaticJsonDocument<128> doc;
-  deserializeJson(doc, s);
-
-  uint32_t on_delay = doc["on_ms"];
-  uint32_t off_delay = doc["off_ms"];
-
-  // _pin = pin;
-  _on_delay = on_delay;
-  _off_delay = off_delay;
   return true;
 }
 
-// called when you publish your state to e12-node
-// NOTE: cannot be more than 96 bytes of JSON
 int e12_demo::on_get_state(char* s, int len, void* ctx) {
-  Serial.println("**********ARDUINO GOT GET STATE ***********");
-  StaticJsonDocument<96> doc;
-  doc["count"] = _count;
-  doc["on"] = _on;
-  int count = serializeJson(doc, s, len);
-  Serial.print(count);
-  Serial.println(s);
-  return count;
+  strcpy_P(s, PSTR("{\"count\":"));
+
+  // Write the number directly into 's' starting at the current end
+  // 's + strlen(s)' points to the null terminator
+  ultoa(_count, s + strlen(s), 10);
+
+  strcat_P(s, PSTR(",\"on\":"));
+  strcat(s, _on ? "1" : "0");
+  strcat(s, "}");
+
+  return strlen(s);
 }
 
-// called when you receive state from e12-node
 int e12_demo::on_restore_state(const char* s, int len) {
-  Serial.println("**********ARDUINO RESTORE STATE ***********");
-  Serial.println(s);
-  StaticJsonDocument<96> doc;
-  deserializeJson(doc, s);
-  _count = doc["count"];
-  _on = doc["on"];
+  E12_PRINTLN("**********ARDUINO RESTORE STATE ***********");
+  E12_PRINTLN(s);
+
+  _count = json_get_val(s, "\"count\"");
+  _on = (uint8_t)json_get_val(s, "\"on\"");
+
   return 0;
 }
+
 
 // publish log events to e12-node
 int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
@@ -143,51 +143,51 @@ uint32_t e12_demo::demo() {
       send(get_request(e12_cmd_t::CMD_PING, true, NULL));
     } break;
     case E12_SEND_STATE: {
-      Serial.println("Executing: sending state to e12 node");
+      E12_PRINTLN("Executing: sending state to e12 node");
       send(get_request(e12_cmd_t::CMD_STATE, true, (void*)true));
     } break;
     case E12_FETCH_CONFIG: {
-      Serial.println("Executing: Request config from e12 node");
+      E12_PRINTLN("Executing: Request config from e12 node");
       send(get_request(e12_cmd_t::CMD_CONFIG));
     } break;
     case E12_SEND_INFO: {
-      Serial.println("Executing: Publishing vmcu info");
+      E12_PRINTLN("Executing: Publishing vmcu info");
       send(get_request(e12_cmd_t::CMD_INFO));
     } break;
     case E12_GET_TIME: {
-      Serial.println("Executing: Requesting TIME from e12 node");
+      E12_PRINTLN("Executing: Requesting TIME from e12 node");
       send(get_request(e12_cmd_t::CMD_TIME));
     } break;
     case E12_SCHEDULE_WAKEUP: {
-      Serial.println("Executing: WAKE ME UP in 10 sec");
+      E12_PRINTLN("Executing: WAKE ME UP in 10 sec");
       e12_wakeup_data_t wakeup = {0};
       wakeup.ms = 10000;
       send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
     } break;
     case E12_NODE_WAKEUP: {
-      Serial.println("Executing: e12 node wakeup");
+      E12_PRINTLN("Executing: e12 node wakeup");
       wakeup_e12_node();
       return 0;
     } break;
     case E12_NODE_TRANSMIT: {
-      Serial.println("Executing: e12 node TRANSMIT");
+      E12_PRINTLN("Executing: e12 node TRANSMIT");
       e12_node_properties_t p = {0};
       p.TRANSMIT = true;
       send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
     } break;
     case E12_NODE_DISABLE_SLEEP: {
-      Serial.println("Executing: e12 node DISABLE SLEEP");
+      E12_PRINTLN("Executing: e12 node DISABLE SLEEP");
       e12_node_properties_t p = {0};
       p.DISABLE_SLEEP = true;
       send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
     } break;
     case E12_NODE_BLINK: {
-      Serial.println("Executing: e12 node blink");
+      E12_PRINTLN("Executing: e12 node blink");
       e12_debug_blink_t blink = {.on_ms = 1000, .off_ms = 2000, .count = 10};
       send(get_request(e12_cmd_t::CMD_DEBUG_BLINK, true, (void*)&blink));
     } break;
     case E12_NODE_ACTIVATE_AP: {
-      Serial.println("Executing: activate captive portal on e12 node");
+      E12_PRINTLN("Executing: activate captive portal on e12 node");
       e12_node_properties_t p = {0};
       p.ACTIVATE_WIFI_CAPTIVE_PORTAL = true;
       send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
@@ -197,7 +197,7 @@ uint32_t e12_demo::demo() {
       return E12_SEND_WIFI_AUTH;
     } break;
     case E12_NODE_LOGMASK: {
-      Serial.println("Executing: e12 logmask");
+      E12_PRINTLN("Executing: e12 logmask");
       e12_node_properties_t p = {0};
       p.LOGMASK = true;
       p.data = (uint64_t)0x01 << 26;  // dont log DEBUG_BLINK
@@ -207,7 +207,7 @@ uint32_t e12_demo::demo() {
       send(get_request(e12_cmd_t::CMD_OTA));
     } break;
     case E12_NODE_INITIATE_VMCU_OTA: {
-      Serial.println("Executing: VMCU OTA ... disconnect Serial");
+      E12_PRINTLN("Executing: VMCU OTA ... disconnect Serial");
       delay(5000);
       send(get_request(e12_cmd_t::CMD_VMCU_OTA));
     } break;

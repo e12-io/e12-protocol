@@ -85,7 +85,11 @@ void e12_intr_handler() {
 }
 
 static void e12_intr() {
+#if defined(ARDUINO_AVR_UNO)
+  pinMode(E12_INTR_PIN, INPUT);  // Requires physical 10k resistor to GND
+#else
   pinMode(E12_INTR_PIN, INPUT_PULLDOWN);
+#endif
   attachInterrupt(digitalPinToInterrupt(E12_INTR_PIN), e12_intr_handler, HIGH);
 }
 
@@ -109,7 +113,7 @@ void setup() {
 #endif
 
   Serial.begin(115200);
-  Serial.println("e12 Demo (version): 1.0.4");
+  Serial.println(F("e12 Demo (version): 1.0.4"));
   demo.begin(&Wire, E12_BUS_ADDRESS);
   sensors.begin();
 
@@ -134,7 +138,7 @@ void loop() {
       // e.g library would not know/hard code the wifi auth
       // info
       case E12_SEND_WIFI_AUTH: {
-        Serial.println("Executing: e12 wifi auth exchange");
+        E12_PRINTLN("Executing: e12 wifi auth exchange");
         //        e12_auth_data_t auth = {.AUTH_WIFI = true};
         e12_auth_data_t auth = {0};
         auth.AUTH_WIFI = true;
@@ -164,11 +168,11 @@ void loop() {
   while (event_flag && mask != 0) {
     switch ((event_flag & mask)) {
       case EVT_BLINK: {
-        Serial.println("Executing: blink");
+        E12_PRINTLN("Executing: blink");
         demo.blink();
       } break;
       case EVT_TEMP: {
-        Serial.println("Executing: Read temperature");
+        E12_PRINTLN("Executing: Read temperature");
         demo.read_temp(&sensors);
       } break;
     }
