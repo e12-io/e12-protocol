@@ -3,4 +3,6 @@ build
 docs/html
 examples/e12-demo/build
 examples/e12-demo/.vscode
+examples/e12-demo/*.bin
+examples/e12-demo/*.json
 debug.log
