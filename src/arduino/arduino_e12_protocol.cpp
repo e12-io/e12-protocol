@@ -24,7 +24,8 @@ int e12_arduino::begin(void* bus, uint8_t e12_addr) {
 #endif
 
   _bus->begin();
-  _bus->setClock(100000UL);  // experimenting with 1Mhz speed
+  _bus->setClock(400000UL); 
+  // _bus->setClock(1000000UL);  // experimenting with 1Mhz speed
 
   // good time to make sure that e12 node is awake
   set_node_status(e12_node_op_status_t::STATUS_ACTIVE, 0);
@@ -75,7 +76,7 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
       // typically e12-node should wake up and become
       // operational in less than 300ms
       wakeup_e12_node();
-      delay(300);
+      delay(100);
     } else {
       return (int)e12_err_t::ERR_RETRY_LATER;
     }
@@ -120,7 +121,7 @@ e12_packet_t* e12_arduino::read() {
     Serial.print((uint8_t)c);
 #endif
     if ((p = decode(f, c))) {
-      while (_bus->available()) _bus->read();
+      //while (_bus->available()) _bus->read();
       return p;
     }
   }

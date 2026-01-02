@@ -53,7 +53,7 @@ int e12_client::wakeup_e12_node() {
   // Briefly pulse the pin HIGH then LOW
   pinMode(WAKEUP_INTR_PIN, OUTPUT);
   digitalWrite(WAKEUP_INTR_PIN, HIGH);
-  delay(1);  // 1ms
+  delay(5);  // 1ms
   digitalWrite(WAKEUP_INTR_PIN, LOW);
   return 0;
 };
