@@ -140,29 +140,30 @@ uint32_t e12_demo::demo() {
 
   switch (cmd) {
     case E12_SEND_PING: {
-      send(get_request(e12_cmd_t::CMD_PING, true, NULL));
+      send(get_request(e12_cmd_t::CMD_PING, true, NULL), true);
     } break;
     case E12_SEND_STATE: {
       E12_PRINTLN("Executing: sending state to e12 node");
-      send(get_request(e12_cmd_t::CMD_STATE, true, (void*)true));
+      send(get_request(e12_cmd_t::CMD_STATE, true, (void*)true), true);
     } break;
     case E12_FETCH_CONFIG: {
       E12_PRINTLN("Executing: Request config from e12 node");
-      send(get_request(e12_cmd_t::CMD_CONFIG));
+      send(get_request(e12_cmd_t::CMD_CONFIG), true);
     } break;
     case E12_SEND_INFO: {
       E12_PRINTLN("Executing: Publishing vmcu info");
-      send(get_request(e12_cmd_t::CMD_INFO));
+      send(get_request(e12_cmd_t::CMD_INFO), true);
     } break;
     case E12_GET_TIME: {
       E12_PRINTLN("Executing: Requesting TIME from e12 node");
-      send(get_request(e12_cmd_t::CMD_TIME));
+      send(get_request(e12_cmd_t::CMD_TIME), true);
     } break;
     case E12_SCHEDULE_WAKEUP: {
       E12_PRINTLN("Executing: WAKE ME UP in 10 sec");
       e12_wakeup_data_t wakeup = {0};
       wakeup.ms = 10000;
-      send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup));
+      send(get_request(e12_cmd_t::CMD_SCHEDULE_WAKEUP, true, (void*)&wakeup),
+           true);
     } break;
     case E12_NODE_WAKEUP: {
       E12_PRINTLN("Executing: e12 node wakeup");
@@ -173,24 +174,27 @@ uint32_t e12_demo::demo() {
       E12_PRINTLN("Executing: e12 node TRANSMIT");
       e12_node_properties_t p = {0};
       p.TRANSMIT = true;
-      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
+      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p),
+           true);
     } break;
     case E12_NODE_DISABLE_SLEEP: {
       E12_PRINTLN("Executing: e12 node DISABLE SLEEP");
       e12_node_properties_t p = {0};
       p.DISABLE_SLEEP = true;
-      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
+      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p),
+           true);
     } break;
     case E12_NODE_BLINK: {
       E12_PRINTLN("Executing: e12 node blink");
       e12_debug_blink_t blink = {.on_ms = 1000, .off_ms = 2000, .count = 10};
-      send(get_request(e12_cmd_t::CMD_DEBUG_BLINK, true, (void*)&blink));
+      send(get_request(e12_cmd_t::CMD_DEBUG_BLINK, true, (void*)&blink), true);
     } break;
     case E12_NODE_ACTIVATE_AP: {
       E12_PRINTLN("Executing: activate captive portal on e12 node");
       e12_node_properties_t p = {0};
       p.ACTIVATE_WIFI_CAPTIVE_PORTAL = true;
-      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
+      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p),
+           true);
     } break;
     // once the client code should handle
     case E12_SEND_WIFI_AUTH: {
@@ -201,15 +205,16 @@ uint32_t e12_demo::demo() {
       e12_node_properties_t p = {0};
       p.LOGMASK = true;
       p.data = (uint64_t)0x01 << 26;  // dont log DEBUG_BLINK
-      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p));
+      send(get_request(e12_cmd_t::CMD_SET_NODE_PROPERTIES, true, (void*)&p),
+           true);
     } break;
     case E12_NODE_INITIATE_OTA: {
-      send(get_request(e12_cmd_t::CMD_OTA));
+      send(get_request(e12_cmd_t::CMD_OTA), true);
     } break;
     case E12_NODE_INITIATE_VMCU_OTA: {
       E12_PRINTLN("Executing: VMCU OTA ... disconnect Serial");
       delay(5000);
-      send(get_request(e12_cmd_t::CMD_VMCU_OTA));
+      send(get_request(e12_cmd_t::CMD_VMCU_OTA), true);
     } break;
     default: {
       return -1;

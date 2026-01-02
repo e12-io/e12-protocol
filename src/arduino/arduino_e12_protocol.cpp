@@ -75,7 +75,7 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
       // typically e12-node should wake up and become
       // operational in less than 300ms
       wakeup_e12_node();
-      delay(500);
+      delay(300);
     } else {
       return (int)e12_err_t::ERR_RETRY_LATER;
     }
@@ -95,6 +95,8 @@ int e12_arduino::send(e12_packet_t* buf, bool retry) {
   }
 #endif
 
+  E12_PRINT_F("Sending Request cmd/len: %d:%d", (int)(req->data.msg.head.cmd),
+              req->head.len);
   _bus->write(req->buf, req->head.len);
   if (_bus->endTransmission() != 0) {
     return -1;

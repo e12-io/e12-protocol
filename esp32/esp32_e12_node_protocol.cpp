@@ -219,7 +219,6 @@ e12_packet_t* e12_esp32_node::read() {
       // for (int i = 0; i < p->msg.head.len; i++) {
       //   ESP_LOGI(TAG, "Write %d:%d:%c\n", i, p->buf[i], (char)p->buf[i]);
       // }
-      while (_bus->available()) _bus->read();
       return p;
     }
   }

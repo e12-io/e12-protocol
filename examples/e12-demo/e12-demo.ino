@@ -128,6 +128,10 @@ void setup() {
   p.REFRESH_CONFIG = true;
   p.ACTIVATE_WIFI = true;
   demo.set_node_properties(&p);
+
+  // the e12 node might be already asleep, let trigger a 
+  // wakeup anyway 
+  demo.wakeup_e12_node();
 }
 
 void loop() {
