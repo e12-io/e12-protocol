@@ -385,20 +385,6 @@ e12_packet_t* e12::e12_get_packet() {
  * @return Status of the e12 node
  */
 e12_node_op_status_t e12::get_node_status() {
-  switch (_status.op_status) {
-    case e12_node_op_status_t::STATUS_ACTIVE:
-      _status.node_wake_up_ms = 0;
-      break;
-    case e12_node_op_status_t::STATUS_SLEEP:
-      if (get_time_ms() > _status.node_wake_up_ms) {
-        // for some reason we think e12 node is still not active then
-        // lets wake it up
-        wakeup_e12_node();
-      }
-      break;
-    default:
-      break;
-  }
   return _status.op_status;
 }
 
