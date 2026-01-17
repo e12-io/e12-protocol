@@ -81,8 +81,8 @@ int e12_esp32_node::send(e12_packet_t* buf, bool retry) {
   }
 
   if (p) {
-    ESP_LOGI(TAG, "E12_OPCODE_WRITE_E12_FRAME (%d: %d)\n", p->data.msg.head.seq,
-             p->head.len);
+    ESP_LOGI(TAG, "E12_OPCODE_WRITE_E12_FRAME (%d: %d: %d: %d)\n",
+             p->data.msg.head.seq, p->data.msg.head.cmd, p->head.len, p->head.checksum);
     // for (int i = 0; i < p->head.len; i++) {
     //   ESP_LOGI(TAG, "write (%d:%d:%c)\n", i, p->buf[i], (char)p->buf[i]);
     // }

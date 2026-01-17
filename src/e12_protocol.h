@@ -43,8 +43,13 @@ enum class e12_cmd_t : uint8_t {
   CMD_PING,
   /// used to pass authentication credential for e.g WiFi or LTE etc
   CMD_AUTH,
-  /// used to request vendor specific configuration
+  /// used to send current VMCU firmware version
   CMD_INFO,
+  /// used to send device profile info e.g pins (digital/analog), in/out etc
+  CMD_PROFILE,
+  /// used issue a pin READ/WRITE. the concept of PIN is virtual and can be mapped
+  /// to arbitrary cmd instructions
+  CMD_PIN_CTL,
   /// used to request vendor specific configuration
   CMD_CONFIG,
   /// used to either send or request vendor state from e12 node
@@ -79,6 +84,13 @@ enum class e12_release_t : uint8_t {
   CANARY,
   /// Development release
   DEV
+};
+
+enum class ctl_op_t : uint8_t {
+  /// READ operation
+  READ = 0,
+  /// WRITE operation
+  WRITE
 };
 
 /**
@@ -117,11 +129,7 @@ enum class e12_node_op_status_t : uint8_t {
 /**
  * @brief Supported MCU architecture
  */
-enum class mcu_arch_t : uint8_t {
-  ARCH_NONE = 0,
-  ARCH_ATMEGA328,
-  ARCH_SAMD21
-};
+enum class mcu_arch_t : uint8_t { ARCH_NONE = 0, ARCH_ATMEGA328, ARCH_SAMD21 };
 
 /**
  * @brief Supported MCU flashing protocols architecture
@@ -260,6 +268,21 @@ typedef union __attribute__((packed, aligned(4))) e12_onwire_head {
 #define E12_MAX_CMD_DATA_PAYLOAD (E12_MAX_DATA_PAYLOAD - sizeof(e12_header_t))
 #define E12_MAX_FIRMWARE_VERSION_LEN 32
 
+typedef struct __attribute__((packed, aligned(4))) {
+  e12_header_t head;
+  union {
+    uint32_t data;
+    struct {
+      uint8_t type : 1;      /// digital = 0, analog = 1
+      uint8_t op : 1;        /// read = 0, write = 1
+      uint8_t response : 1;  /// req = 0, response = 1
+      uint8_t : 0;
+      uint8_t pin;     /// pin number
+      uint16_t value;  /// digital pin (0/1), analog pin (0 - 2^16)
+    };
+  };
+} e12_ctl_msg_t;
+
 typedef union __attribute__((packed, aligned(4))) e12_packet {
   uint8_t buf[E12_MAX_DATA_PAYLOAD];
   struct {
@@ -309,6 +332,24 @@ typedef union __attribute__((packed, aligned(4))) e12_packet {
   } msg_info;
   struct {
     e12_header_t head;
+    union {
+      uint32_t all;
+      struct {
+        uint16_t digital;  /// mask of digital inputs
+        uint16_t analog;   /// mask of analog inputs
+      };
+    } pins;
+    union {
+      uint32_t all;
+      struct {
+        uint16_t digital;  /// mask of digital inputs
+        uint16_t analog;   /// mask of analog inputs
+      };
+    } mask;
+  } msg_dev_profile;
+  e12_ctl_msg_t msg_ctl;
+  struct {
+    e12_header_t head;
   } msg_vmcu_ota;
 } e12_packet_t;
 
@@ -341,6 +382,12 @@ typedef struct __attribute__((packed, aligned(4))) e12_device {
   e12_log_evt_t log;
 } e12_device_t;
 
+typedef struct __attribute__((packed, aligned(4))) {
+  ctl_op_t op;
+  uint8_t pin;
+  int16_t value;
+} ctl_log_t;
+
 /**
  * @class e12
  * @brief This class represents the base class for the e12 protocol.
@@ -352,11 +399,13 @@ typedef struct __attribute__((packed, aligned(4))) e12_device {
  */
 class e12 {
  private:
-  uint32_t _vid;             ///< Vendor ID
-  uint32_t _pid;             ///< Product ID
-  uint32_t _version;         ///< Version of the e12 protocol
-  e12_node_state_t _status;  ///< Status of the e12 node
-  uint32_t _mcu_fwr_version;         ///< Version of the e12 protocol
+  uint32_t _vid;              ///< Vendor ID
+  uint32_t _pid;              ///< Product ID
+  uint32_t _version;          ///< Version of the e12 protocol
+  uint32_t _pin_mask;         ///< Version of the e12 protocol
+  uint32_t _pin_io_mask;      ///< Version of the e12 protocol
+  e12_node_state_t _status;   ///< Status of the e12 node
+  uint32_t _mcu_fwr_version;  ///< Version of the e12 protocol
   mcu_arch_t _arch;
   mcu_flashing_protocol_t _protocol;
   bool _mcu_flashing_enabled;
@@ -386,11 +435,13 @@ class e12 {
    * @param buf Pointer to the buffer to be flushed
    */
   void flush_buffer(e12_onwire_t* buf);
+  
   /**
    * @brief Gets the status of the e12 node.
    * @return Status of the e12 node
    */
   e12_node_op_status_t get_node_status();
+  
   /**
    * @brief Sets the status of the e12 node.
    * @param status Status to be set
@@ -400,6 +451,16 @@ class e12 {
    */
   e12_node_op_status_t set_node_status(e12_node_op_status_t status,
                                        uint32_t data);
+
+  /**
+   * @brief function doing basic sanity and scheduling return cmds
+   * 
+   * @param pin 
+   * @param val 
+   * @return true 
+   * @return false 
+   */
+  bool on_ctl(ctl_op_t op, uint8_t pin, uint32_t val);
 
  public:
   /**
@@ -457,13 +518,13 @@ class e12 {
 
   /**
    * @brief Set the vmcu firmware details object
-   * 
-   * @param arch 
-   * @param protocol 
-   * @param enabled 
+   *
+   * @param arch
+   * @param protocol
+   * @param enabled
    */
   void set_fwr_details(uint32_t fwr_version, mcu_arch_t arch,
-                      mcu_flashing_protocol_t protocol, bool enabled) {
+                       mcu_flashing_protocol_t protocol, bool enabled) {
     _mcu_fwr_version = fwr_version;
     _arch = arch;
     _protocol = protocol;
@@ -472,12 +533,13 @@ class e12 {
 
   /**
    * @brief Get the fwr version object
-   * 
-   * @return uint32_t 
+   *
+   * @return uint32_t
    */
-  uint32_t get_fwr_version() {
-    return _mcu_fwr_version;
-  }
+  uint32_t get_fwr_version() { return _mcu_fwr_version; }
+
+  uint32_t get_pin_mask();
+  uint32_t get_pin_io_mask();
 
   /**
    * @brief Publish info e.g fwr version, arch, protocol etc
@@ -485,7 +547,28 @@ class e12 {
    * @return int
    */
   int publish_info();
-  
+
+  /**
+   * @brief Publish profile info e.g pin configuration
+   *
+   * @return int
+   */
+  int publish_profile();
+
+  /**
+   * @brief Sets the pin as input and type (analog/digital)
+   * @param pin_number
+   * @param is_analog (true = analog, false = digital)
+   */
+  bool set_pin_in(uint8_t pin_number, bool is_analog = false);
+
+  /**
+   * @brief Sets the pin as output and type (analog/digital)
+   * @param pin_number
+   * @param is_analog (true = analog, false = digital)
+   */
+  bool set_pin_out(uint8_t pin_number, bool is_analog = false);
+
   /**
    * @brief Sets the properties of the e12 node.
    * @param props Pointer to the node properties
@@ -522,6 +605,18 @@ class e12 {
    */
   void set_version(uint32_t v) { _version = v; }
 
+  /**
+   * @brief Sets the bit mask for pin and io. Recommended to be
+   * used by advanced user or else use set_pin_in and set_pin_out
+   *
+   * @param pin_mask
+   * @param io_mask
+   */
+  void set_pin_mask(uint32_t pin_mask, uint32_t io_mask) {
+    _pin_mask = pin_mask;
+    _pin_io_mask = io_mask;
+  }
+
   // Communication
 
   /**
@@ -555,7 +650,7 @@ class e12 {
    * @param len Length of the data
    * @return uint8_t Returns the checksum
    */
-  uint8_t get_checksum(const char* data, uint8_t len);
+  static uint8_t get_checksum(const char* data, uint8_t len);
 
   /**
    * @brief Handles the received packet.
@@ -578,6 +673,24 @@ class e12 {
    * @return 0 on success, non-zero on failure
    */
   virtual int print_buffer(e12_onwire_t* buf) { return 0; }
+
+  /**
+   * @brief allows READ state of any valid pin
+   *
+   * @param pin
+   * @return true // if pin is in range 0-31
+   * @return false
+   */
+  virtual int on_ctl_read(uint8_t pin);
+
+  /**
+   * @brief Validates a WRITE request (PIN <- IN only)
+   *
+   * @param pin
+   * @param val
+   * @return bool
+   */
+  virtual bool on_ctl_write(uint8_t pin, uint32_t val);
 
   // Pure virtual functions to be implemented by derived classes
 

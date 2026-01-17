@@ -134,6 +134,10 @@ int e12_client::on_receive(e12_packet_t* p) {
     case e12_cmd_t::CMD_NODE_SLEEP: {
       E12_PRINT_F("CMD_NODE_SLEEP: (%u)", p->msg_sleep.ms);
     } break;
+    case e12_cmd_t::CMD_PIN_CTL: {
+      E12_PRINT_F("CMD_PIN_CTL: (%d:%d:%d)", p->msg_ctl.op, p->msg_ctl.pin,
+                  p->msg_ctl.value);
+    } break;
   }
 
   return 0;

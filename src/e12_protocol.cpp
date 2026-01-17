@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <string.h>
 
+
 #if ESP32_E12_SPEC
 #include <esp_log.h>
 static const char* TAG = "e12-spec";
@@ -38,6 +39,8 @@ e12::e12(uint32_t vid, uint32_t pid) {
   _arch = mcu_arch_t::ARCH_NONE;
   _protocol = mcu_flashing_protocol_t::PROTOCOL_NONE;
   _mcu_fwr_version = 0;
+  _pin_mask = 0;
+  _pin_io_mask = 0;
   _mcu_flashing_enabled = false;
   _status.CONFIGURED = false;
 }
@@ -52,9 +55,14 @@ e12::~e12() {}
  *
  * @return int
  */
-int e12::publish_info() {
-  return send(get_request(e12_cmd_t::CMD_INFO));
-}
+int e12::publish_info() { return send(get_request(e12_cmd_t::CMD_INFO)); }
+
+/**
+ * @brief Publish profile e.g pin configurations
+ *
+ * @return int
+ */
+int e12::publish_profile() { return send(get_request(e12_cmd_t::CMD_PROFILE)); }
 
 /**
  * @brief Encode the given data into an on-wire packet
@@ -68,11 +76,64 @@ e12_onwire_t* e12::encode(e12_packet_t* data) {
   pkt->head.magic[1] = E12_MAGIC_MARKER_2;
   pkt->head.len =
       sizeof(e12_onwire_head_t) + sizeof(e12_header_t) + data->msg.head.len;
-  pkt->head.checksum =
-      get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
+
+  if ((uint8_t*)data != (uint8_t*)&pkt->data) {
+    memcpy(&pkt->data, data, sizeof(e12_header_t) + data->msg.head.len);
+  }
+
+  pkt->head.checksum = get_checksum((const char*)&pkt->data,
+                                    sizeof(e12_header_t) + data->msg.head.len);
   return pkt;
 }
 
+bool e12::set_pin_in(uint8_t pin_number, bool is_analog) {
+  if (pin_number > 15) return false;
+
+  // upper 16 bits are for analog, lower 16 bits for digital
+  // bit as 1 in io mask denotes that it is an input pin else output
+  uint8_t shift = is_analog ? (16 + pin_number) : pin_number;
+  uint32_t bit = (1UL << shift);
+
+  _pin_mask |= bit;
+  _pin_io_mask |= bit;
+
+  return true;
+}
+
+/**
+ * @brief Sets the pin as output and type (analog/digital)
+ * @param pin_number
+ * @param is_analog (true = analog, false = digital)
+ */
+bool e12::set_pin_out(uint8_t pin_number, bool is_analog) {
+  if (pin_number > 15) return false;
+
+  // Determine position: bits 0-15 for digital, 16-31 for analog
+  uint8_t shift = is_analog ? (16 + pin_number) : pin_number;
+  uint32_t bit = (1UL << shift);
+
+  _pin_mask |= bit;
+  // Clear the bit in the IO mask to denote OUTPUT (0)
+  _pin_io_mask &= ~bit;
+
+  return true;
+}
+
+/**
+ * @brief Get the pin io mask object. top 16bit for analog, lower 16bit for
+ * digital
+ *
+ * @return uint32_t
+ */
+uint32_t e12::get_pin_mask() { return _pin_mask; }
+
+/**
+ * @brief Get the pin io mask object. top 16bit for analog, lower 16bit for
+ * digital
+ *
+ * @return uint32_t
+ */
+uint32_t e12::get_pin_io_mask() { return _pin_io_mask; }
 /**
  * @brief Set the node properties
  *
@@ -140,10 +201,11 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     case e12_cmd_t::CMD_STATE: {
       e12_data_t* s = (e12_data_t*)p->msg.data;
       s->IS_JSON = true;
-      p->msg.head.len = 1+4; // IS_JSON + ts_ms
+      p->msg.head.len = 1 + 4;  // IS_JSON + ts_ms
       if (data) {
         s->STORE = true;
-        int len = on_get_state((char*)s->data, MAX_JSON_STATE_BUFFER_SIZE, data);
+        int len =
+            on_get_state((char*)s->data, MAX_JSON_STATE_BUFFER_SIZE, data);
         if (len < MAX_JSON_STATE_BUFFER_SIZE) {
           p->msg.head.len += len;
         } else {
@@ -171,13 +233,21 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       p->msg.head.len = sizeof(p->msg_info);
     } break;
     case e12_cmd_t::CMD_VMCU_OTA: {
-      if(_mcu_flashing_enabled){
+      if (_mcu_flashing_enabled) {
         p->msg.head.len = sizeof(p->msg_vmcu_ota);
-      }else{
+      } else {
         return NULL;
       }
     } break;
-    case e12_cmd_t::CMD_NODE_AWAKE: 
+    case e12_cmd_t::CMD_PROFILE: {
+      p->msg_dev_profile.pins.all = get_pin_mask();
+      p->msg_dev_profile.mask.all = get_pin_io_mask();
+      p->msg.head.len = sizeof(p->msg_dev_profile);
+    } break;
+    case e12_cmd_t::CMD_PIN_CTL: {
+      // payload will be filled by the caller
+    } break;
+    case e12_cmd_t::CMD_NODE_AWAKE:
     case e12_cmd_t::CMD_TIME:
     case e12_cmd_t::CMD_CONFIG:
     default:
@@ -325,8 +395,51 @@ int e12::on_receive(e12_packet_t* p) {
         set_node_status(e12_node_op_status_t::STATUS_SLEEP, ms);
       }
     } break;
+    case e12_cmd_t::CMD_PIN_CTL: {
+      return on_ctl((ctl_op_t)p->msg_ctl.op, p->msg_ctl.pin, p->msg_ctl.value);
+    } break;
+    default:
+      break;
   }
   return 0;
+}
+
+bool e12::on_ctl(ctl_op_t op, uint8_t pin, uint32_t val) {
+  int16_t ret = 0;
+  switch (op) {
+    case ctl_op_t::READ: {
+      ret = e12::on_ctl_read(pin);
+      if (!ret) {
+        ret = on_ctl_read(pin);
+      }
+
+    } break;
+    case ctl_op_t::WRITE: {
+      ret = e12::on_ctl_write(pin, val);
+      if (ret) {
+        ret = on_ctl_write(pin, val);
+      }
+
+    } break;
+    default:
+      return false;
+  }
+
+  // get response packet
+  e12_packet_t* p = get_request(e12_cmd_t::CMD_PIN_CTL, true, (void*)NULL);
+  p->msg_ctl.op = (uint8_t)op;
+  p->msg_ctl.response = true;
+  p->msg_ctl.pin = pin;
+  p->msg_ctl.value = (uint16_t)val;
+  p->msg_ctl.head.len = sizeof(p->msg_ctl);
+  send(p, true);
+
+  // log the event, so there is tracibility
+  // this should get to cloud logs
+  // NOTE expecting synchronous operation. passing pointer to stack object
+  ctl_log_t ctl_log = {.op = op, .pin = pin, .value = ret};
+  log((uint8_t)e12_cmd_t::CMD_PIN_CTL, (uint8_t)e12_evt_status_t::STATUS_DONE,
+      get_time_ms(), (void*)&ctl_log);
 }
 
 /**
@@ -337,34 +450,40 @@ int e12::on_receive(e12_packet_t* p) {
  * @return e12_packet_t* Pointer to the decoded packet
  */
 e12_packet_t* e12::decode(e12_onwire_t* pkt, uint8_t data) {
-#if ESP32_E12_SPEC
-  ESP_LOGI(TAG, "e12::decode(%x)", data);
-#endif
   pkt->buf[pkt->recv_len++] = data;
-  if (pkt->recv_len > sizeof(e12_onwire_head_t)) {
+
+  // 1. Check Magic Markers as soon as we have 2 bytes
+  if (pkt->recv_len == 2) {
+    if (pkt->head.magic[0] != E12_MAGIC_MARKER_1 ||
+        pkt->head.magic[1] != E12_MAGIC_MARKER_2) {
+      pkt->recv_len = 0;  // Reset, this isn't our packet
+      return NULL;
+    }
+  }
+
+  // 2. Once we have the full header, we know how long to wait
+  if (pkt->recv_len >= sizeof(e12_onwire_head_t)) {
     if (pkt->recv_len == pkt->head.len) {
-      // we received the full packet. We can do the checksum validation
-      pkt->recv_len = 0;
-      uint8_t checksum =
-          get_checksum((const char*)&pkt->data, sizeof(e12_packet_t));
-      if (checksum != pkt->head.checksum) {
+      uint8_t expected = pkt->head.checksum;
+      uint8_t actual = get_checksum((const char*)&pkt->data,
+                                    pkt->head.len - sizeof(e12_onwire_head_t));
+      pkt->recv_len = 0;  // Reset for next packet
+
+      if (actual != expected) {
 #if ESP32_E12_SPEC
-        ESP_LOGE(
-            TAG,
-            "e12::decode(CHECKSUM FAILED, expected = %02x, received = %02x)",
-            pkt->head.checksum, checksum);
+        ESP_LOGE(TAG, "Checksum Fail! Got %02x, Exp %02x", actual, expected);
 #endif
         return NULL;
       }
       return &pkt->data;
     }
-  } else if (pkt->recv_len == E12_MAGIC_MARKER_LEN) {
-    if (pkt->head.magic[0] != E12_MAGIC_MARKER_1 &&
-        pkt->head.magic[1] != E12_MAGIC_MARKER_2) {
-      pkt->recv_len = 0;
-      return NULL;
-    }
   }
+
+  // 3. Safety: Don't overflow if len is garbage
+  if (pkt->recv_len >= sizeof(e12_onwire_t)) {
+    pkt->recv_len = 0;
+  }
+
   return NULL;
 }
 
@@ -384,9 +503,7 @@ e12_packet_t* e12::e12_get_packet() {
  * @brief Gets the status of the e12 node.
  * @return Status of the e12 node
  */
-e12_node_op_status_t e12::get_node_status() {
-  return _status.op_status;
-}
+e12_node_op_status_t e12::get_node_status() { return _status.op_status; }
 
 /**
  * @brief Sets the status of the e12 node.
@@ -410,4 +527,34 @@ e12_node_op_status_t e12::set_node_status(e12_node_op_status_t status,
       break;
   }
   return _status.op_status;
+}
+
+/**
+ * @brief Validates a READ request (Any configured pin is readable)
+ */
+int e12::on_ctl_read(uint8_t pin) {
+  if (pin > 31) return -1;
+
+  uint32_t bit = (1UL << pin);
+  return ((_pin_mask & bit) != 0) ? 0 : -1;
+}
+
+/**
+ * @brief Validates a WRITE request (PIN <- IN only)
+ */
+bool e12::on_ctl_write(uint8_t pin, uint32_t val) {
+  if (pin > 31) return false;
+
+  uint32_t bit = (1UL << pin);
+  if (!(_pin_mask & bit) || !(_pin_io_mask & bit)) {
+    return false;
+  }
+
+  if (pin < 16) {
+    if (val > 1) return false;
+  } else {
+    if (val > 4095) return false;
+  }
+
+  return true;
 }

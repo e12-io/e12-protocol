@@ -30,7 +30,7 @@
 
 e12_demo demo(E12HQ_VENDOR_ID, E12HQ_VENDOR_ID);
 
-static uint8_t event_flag = 0x00;
+static volatile uint8_t event_flag = 0x00;
 
 #if ARDUINO_RASPBERRY_PI_PICO
 struct repeating_timer timer_blink;
@@ -99,7 +99,7 @@ void setup() {
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 #elif ARDUINO_SAMD_ZERO
-  fast_samd21_tc3_configure(60000000);  // blink every 1min sec
+  fast_samd21_tc3_configure(2000000);  // blink every 1min sec
   fast_samd21_tc4_tc5_configure(120000000);
   
   // enable MCU flashing by e12-node
@@ -120,6 +120,9 @@ void setup() {
   // enable interrupt handling
   // once triggered then read e12 message
   e12_intr();
+
+  // define the pins available for control
+  demo.set_pin_in(ledPin);
 
   // here we activate the Wifi and ask e12 node to
   // always fetch its configaration from the server
@@ -164,24 +167,27 @@ void loop() {
     e12_read_msg = false;
     if (!published_info){
       demo.publish_info();
+      demo.publish_profile();
       published_info = true;
     } 
   }
 
-  uint8_t mask = 0x01;
-  while (event_flag && mask != 0) {
-    switch ((event_flag & mask)) {
-      case EVT_BLINK: {
-        E12_PRINTLN("Executing: blink");
-        demo.blink();
-      } break;
-      case EVT_TEMP: {
-        E12_PRINTLN("Executing: Read temperature");
-        demo.read_temp(&sensors);
-      } break;
+  if (event_flag) {
+    uint8_t current_events;
+
+    noInterrupts();
+    current_events = event_flag;
+    event_flag = 0;  // Clear all at once or handle bit by bit
+    interrupts();
+
+    if (current_events & 0x01) {
+      E12_PRINTLN("Executing: blink");
+      demo.blink();
     }
-    event_flag &= ~mask;
-    mask = mask << 1;
+    if (current_events & 0x02) {
+      E12_PRINTLN("Executing: Read temperature");
+      demo.read_temp(&sensors);
+    }
   }
 
   // here ideally in a real device you will

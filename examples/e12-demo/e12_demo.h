@@ -35,6 +35,7 @@ enum {
   EVT_BLINK = 0x01,
   EVT_TEMP = 0x02,
   EVT_DEMO = 0x03,
+  EVT_CTL = 0x04,
 } event_t;
 
 class e12_demo : public e12_client {
@@ -49,9 +50,15 @@ class e12_demo : public e12_client {
  public:
   e12_demo(uint32_t vid, uint32_t pid);
   ~e12_demo() {}
+
+  // virtual function implemented
   int on_config(const char* s, int len);
   int on_get_state(char* s, int len, void* ctx);
   int on_restore_state(const char* s, int len);
+
+  int on_ctl_read(uint8_t pin);
+  bool on_ctl_write(uint8_t pin, uint32_t val);
+
   int log(uint8_t type, uint8_t status, uint32_t ts, void* data);
 
   // client device functions

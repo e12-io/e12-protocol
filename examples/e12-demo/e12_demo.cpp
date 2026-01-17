@@ -67,6 +67,22 @@ uint32_t e12_demo::read_temp(DallasTemperature* sensors) {
   return 0;
 }
 
+int e12_demo::on_ctl_read(uint8_t pin) {
+  E12_PRINTLN("**********ARDUINO ON-CTL READ ***********");
+  pinMode(pin, INPUT);
+  return digitalRead(pin);
+}
+
+bool e12_demo::on_ctl_write(uint8_t pin, uint32_t val) {
+  // if we get here then basic sanitation
+  // regarding if the pin is legit and get in the mask
+  // is already done
+
+  E12_PRINTLN("**********ARDUINO ON-CTL WRITE ***********");
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, val);
+  return val;
+}
 
 int e12_demo::on_config(const char* s, int len) {
   // s = {"pin":4,"on_ms":1000, "off_ms":2000}
@@ -103,7 +119,6 @@ int e12_demo::on_restore_state(const char* s, int len) {
   return 0;
 }
 
-
 // publish log events to e12-node
 int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
   e12_log_evt_t* evt = e12_arduino::get_log_evt();
@@ -122,6 +137,13 @@ int e12_demo::log(uint8_t type, uint8_t status, uint32_t ts, void* data) {
       evt->f_data = *((float*)data);
       evt->f = true;
     } break;
+    // TODO: refactor log stuff. This does not
+    // belong here
+    case (uint8_t)e12_cmd_t::CMD_PIN_CTL: {
+      ctl_log_t* ctl_log = (ctl_log_t*)data;
+      evt->src = ctl_log->pin;
+      evt->i_data = ctl_log->value;
+    }
   }
   send(get_request(e12_cmd_t::CMD_LOG, true, evt), true);
   evt->in_use = false;
@@ -215,6 +237,10 @@ uint32_t e12_demo::demo() {
       E12_PRINTLN("Executing: VMCU OTA ... disconnect Serial");
       delay(5000);
       send(get_request(e12_cmd_t::CMD_VMCU_OTA), true);
+    } break;
+    case E12_SEND_PROFILE: {
+      E12_PRINTLN("Executing: send device profile");
+      send(get_request(e12_cmd_t::CMD_PROFILE), true);
     } break;
     default: {
       return -1;

@@ -42,7 +42,8 @@ void print_help() {
   Serial.println(F("17 : Initiate VMCU Flashing"));
   Serial.println(F("18 : e12 node please DISABLE SLEEP"));
   Serial.println(F("19 : set logmask for e12 node"));
-  Serial.println(F("20 : e12 node please BLINK"));
+  Serial.println(F("20 : Send device profile info"));
+  Serial.println(F("21 : e12 node please BLINK"));
 }
 
 #define MAX_CMD_LEN 8
