@@ -21,4 +21,4 @@ jobs:
           # We tell the linter to be strict so we catch 
           # issues before the Arduino registry does.
           compliance: strict
-          library-manager: update
+          library-manager: submit
