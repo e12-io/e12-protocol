@@ -214,8 +214,8 @@ e12_packet_t* e12_esp32_node::read() {
     uint8_t c = _bus->read();
     e12_packet_t* p = NULL;
     if ((p = decode(f, (uint8_t)c))) {
-      ESP_LOGI(TAG, "**** Received full e12 FRAME (%d:%d) ****\n",
-               p->msg.head.seq, p->msg.head.len);
+      ESP_LOGI(TAG, "**** Received full e12 FRAME (%d:%d:%d) ****\n",
+               p->msg.head.seq, p->msg.head.cmd, p->msg.head.len);
       // for (int i = 0; i < p->msg.head.len; i++) {
       //   ESP_LOGI(TAG, "Write %d:%d:%c\n", i, p->buf[i], (char)p->buf[i]);
       // }

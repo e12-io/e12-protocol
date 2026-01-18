@@ -436,12 +436,7 @@ bool e12::on_ctl(ctl_op_t op, uint8_t pin, uint32_t val) {
   p->msg_ctl.head.len = sizeof(p->msg_ctl);
   send(p, true);
 
-  // log the event, so there is tracibility
-  // this should get to cloud logs
-  // NOTE expecting synchronous operation. passing pointer to stack object
-  ctl_log_t ctl_log = {.op = op, .pin = pin, .value = ret};
-  log((uint8_t)e12_cmd_t::CMD_PIN_CTL, (uint8_t)e12_evt_status_t::STATUS_DONE,
-      get_time_ms(), (void*)&ctl_log);
+  return ret;
 }
 
 /**
