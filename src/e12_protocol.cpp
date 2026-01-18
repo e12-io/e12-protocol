@@ -89,13 +89,13 @@ e12_onwire_t* e12::encode(e12_packet_t* data) {
 bool e12::set_pin_in(uint8_t pin_number, bool is_analog) {
   if (pin_number > 15) return false;
 
-  // upper 16 bits are for analog, lower 16 bits for digital
-  // bit as 1 in io mask denotes that it is an input pin else output
+  // Determine position: bits 0-15 for digital, 16-31 for analog
   uint8_t shift = is_analog ? (16 + pin_number) : pin_number;
   uint32_t bit = (1UL << shift);
 
   _pin_mask |= bit;
-  _pin_io_mask |= bit;
+  // Clear the bit in the IO mask to denote INPUT (0)
+  _pin_io_mask &= ~bit;
 
   return true;
 }
@@ -108,13 +108,14 @@ bool e12::set_pin_in(uint8_t pin_number, bool is_analog) {
 bool e12::set_pin_out(uint8_t pin_number, bool is_analog) {
   if (pin_number > 15) return false;
 
-  // Determine position: bits 0-15 for digital, 16-31 for analog
+  // upper 16 bits are for analog, lower 16 bits for digital
+  // bit as 1 in io mask denotes that it is an output
+
   uint8_t shift = is_analog ? (16 + pin_number) : pin_number;
   uint32_t bit = (1UL << shift);
 
   _pin_mask |= bit;
-  // Clear the bit in the IO mask to denote OUTPUT (0)
-  _pin_io_mask &= ~bit;
+  _pin_io_mask |= bit;
 
   return true;
 }
