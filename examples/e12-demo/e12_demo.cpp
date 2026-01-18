@@ -70,7 +70,9 @@ uint32_t e12_demo::read_temp(DallasTemperature* sensors) {
 int e12_demo::on_ctl_read(uint8_t pin) {
   E12_PRINTLN("**********ARDUINO ON-CTL READ ***********");
   pinMode(pin, INPUT);
-  return digitalRead(pin);
+  int val = digitalRead(pin);
+  E12_PRINT_F("PIN READ (%d) : %d", pin, val);
+  return val;
 }
 
 bool e12_demo::on_ctl_write(uint8_t pin, uint32_t val) {
@@ -79,6 +81,7 @@ bool e12_demo::on_ctl_write(uint8_t pin, uint32_t val) {
   // is already done
 
   E12_PRINTLN("**********ARDUINO ON-CTL WRITE ***********");
+  E12_PRINT_F("PIN WRITE (%d) : %d", pin, val);
   pinMode(pin, OUTPUT);
   digitalWrite(pin, val);
   return val;
