@@ -123,6 +123,7 @@ void setup() {
 
   // define the pins available for control
   demo.set_pin_in(ledPin);
+  demo.set_pin_in(4); // relay pin on arduino shield
 
   // here we activate the Wifi and ask e12 node to
   // always fetch its configaration from the server

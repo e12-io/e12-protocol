@@ -283,6 +283,9 @@ typedef struct __attribute__((packed, aligned(4))) {
   };
 } e12_ctl_msg_t;
 
+// it is expected that the head.len is set to include the 
+// size of e12_header_t + size of the specific msg payload
+// so typically e.g msg_err.head.len = sizeof(msg_err);
 typedef union __attribute__((packed, aligned(4))) e12_packet {
   uint8_t buf[E12_MAX_DATA_PAYLOAD];
   struct {

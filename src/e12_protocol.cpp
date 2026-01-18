@@ -75,14 +75,14 @@ e12_onwire_t* e12::encode(e12_packet_t* data) {
   pkt->head.magic[0] = E12_MAGIC_MARKER_1;
   pkt->head.magic[1] = E12_MAGIC_MARKER_2;
   pkt->head.len =
-      sizeof(e12_onwire_head_t) + sizeof(e12_header_t) + data->msg.head.len;
+      sizeof(e12_onwire_head_t) + data->msg.head.len;
 
   if ((uint8_t*)data != (uint8_t*)&pkt->data) {
-    memcpy(&pkt->data, data, sizeof(e12_header_t) + data->msg.head.len);
+    memcpy(&pkt->data, data, data->msg.head.len);
   }
 
   pkt->head.checksum = get_checksum((const char*)&pkt->data,
-                                    sizeof(e12_header_t) + data->msg.head.len);
+                                    data->msg.head.len);
   return pkt;
 }
 
@@ -160,10 +160,10 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
   if (!p) return NULL;
   p->msg.head.cmd = cmd;
   p->msg.head.RESP_EXPECTED = response;
-  p->msg.head.len = 0;
+  p->msg.head.len = sizeof(e12_header_t);
   switch (cmd) {
     case e12_cmd_t::CMD_PING: {
-      p->msg.head.len = strlen(STR_PING) + 1;
+      p->msg.head.len += strlen(STR_PING) + 1;
       memcpy(p->msg.data, STR_PING, p->msg.head.len);
     } break;
     case e12_cmd_t::CMD_DEBUG_BLINK: {
@@ -171,37 +171,37 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       p->msg_debug_blink.data.on_ms = blink->on_ms;
       p->msg_debug_blink.data.off_ms = blink->off_ms;
       p->msg_debug_blink.data.count = blink->count;
-      p->msg.head.len = sizeof(e12_debug_blink_t);
+      p->msg.head.len += sizeof(e12_debug_blink_t);
     } break;
     case e12_cmd_t::CMD_SET_NODE_PROPERTIES: {
       e12_node_properties_t* props = (e12_node_properties_t*)data;
       p->msg_node_props.props.flags = props->flags;
       p->msg_node_props.props.data = props->data;
-      p->msg.head.len = sizeof(e12_node_properties_t);
+      p->msg.head.len += sizeof(e12_node_properties_t);
     } break;
     case e12_cmd_t::CMD_LOG: {
       e12_log_evt_t* log = (e12_log_evt_t*)data;
-      p->msg.head.len = sizeof(e12_log_evt_t);
+      p->msg.head.len += sizeof(e12_log_evt_t);
       memcpy(p->msg.data, data, p->msg.head.len);
     } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
       p->msg_sleep.ms = *(uint32_t*)data;
-      p->msg.head.len = sizeof(uint32_t);
+      p->msg.head.len = sizeof(p->msg_sleep);
     } break;
     case e12_cmd_t::CMD_SCHEDULE_WAKEUP: {
       e12_wakeup_data_t* wakeup = (e12_wakeup_data_t*)data;
       p->msg_wakeup.ms = wakeup->ms;
-      p->msg.head.len = sizeof(uint32_t);
+      p->msg.head.len = sizeof(p->msg_wakeup);
     } break;
     case e12_cmd_t::CMD_AUTH: {
       e12_auth_data_t* auth = (e12_auth_data_t*)data;
-      p->msg.head.len = sizeof(e12_auth_data_t);
+      p->msg.head.len += sizeof(e12_auth_data_t);
       memcpy(p->msg.data, data, p->msg.head.len);
     } break;
     case e12_cmd_t::CMD_STATE: {
       e12_data_t* s = (e12_data_t*)p->msg.data;
       s->IS_JSON = true;
-      p->msg.head.len = 1 + 4;  // IS_JSON + ts_ms
+      p->msg.head.len += (1 + 4);  // IS_JSON + ts_ms
       if (data) {
         s->STORE = true;
         int len =
@@ -322,18 +322,20 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
   resp->msg.head.seq = p->msg.head.seq;
   resp->msg.head.IS_RESPONSE = true;
   resp->msg.head.cmd = p->msg.head.cmd;
+  resp->msg.head.len = sizeof(e12_header_t);
   switch (p->msg.head.cmd) {
     case e12_cmd_t::CMD_PING: {
-      resp->msg.head.len = strlen(STR_PONG) + 1;
+      resp->msg.head.len += strlen(STR_PONG) + 1;
       strcpy(resp->msg.data, STR_PONG);
     } break;
     case e12_cmd_t::CMD_TIME: {
       resp->msg_time.ms = get_time_ms();
-      resp->msg.head.len = sizeof(uint32_t);
+      resp->msg.head.len = sizeof(resp->msg_time);
     } break;
     case e12_cmd_t::CMD_CONFIG: {
-      resp->msg.head.len = sizeof(_dev_ptr->config);
-      if (!memcpy(resp->msg.data, &_dev_ptr->config, resp->msg.head.len)) {
+      resp->msg.head.len += sizeof(_dev_ptr->config);
+      if (!memcpy(resp->msg.data, &_dev_ptr->config,
+                  sizeof(_dev_ptr->config))) {
 #if ESP32_E12_SPEC
         ESP_LOGE(TAG, "Failed to copy config data");
 #endif
@@ -351,7 +353,7 @@ e12_packet_t* e12::get_response(e12_packet_t* p) {
         }
         state = (e12_data_t*)resp->msg.data;
         state->STORE = true;
-        resp->msg.head.len = sizeof(e12_data_t);
+        resp->msg.head.len += sizeof(e12_data_t);
       }
     } break;
     default: {
@@ -425,9 +427,9 @@ bool e12::on_ctl(ctl_op_t op, uint8_t pin, uint32_t val) {
       return false;
   }
 
-  // get response packet
+  // get response packet we send as a read
   e12_packet_t* p = get_request(e12_cmd_t::CMD_PIN_CTL, true, (void*)NULL);
-  p->msg_ctl.op = (uint8_t)op;
+  p->msg_ctl.op = (uint8_t) 0; // read
   p->msg_ctl.response = true;
   p->msg_ctl.pin = pin;
   p->msg_ctl.value = (uint16_t)val;
