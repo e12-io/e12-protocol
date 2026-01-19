@@ -50,14 +50,20 @@ bool timer_callback_temp(struct repeating_timer* t) {
 #include <fast_samd21_tc4_tc5.h>
 
 #define LED_PIN LED_BUILTIN
-void TC3_Handler(void) {
-  event_flag |= 0x01;
-  TC3->COUNT16.INTFLAG.bit.MC0 = 1;  // clears the interrupt
-}
 
 void TC4_Handler(void) {
-  event_flag |= (0x01 << 1);
-  TC4->COUNT32.INTFLAG.bit.MC0 = 1;  // clears the interrupt
+  static uint8_t temp_counter = 0;
+
+  // Blink event every 2 seconds (Flag bit 0x01)
+  event_flag |= 0x01;
+
+  // Temperature event every 60 second (Flag bit 0x02)
+  if (++temp_counter >= 30) {
+    event_flag |= (0x01 << 1);
+    temp_counter = 0;
+  }
+
+  TC4->COUNT32.INTFLAG.bit.MC0 = 1;  // Clear interrupt
 }
 
 #endif
@@ -99,9 +105,8 @@ void setup() {
   add_repeating_timer_ms(60000, timer_callback_blink, NULL, &timer_blink);
   add_repeating_timer_ms(120000, timer_callback_temp, NULL, &timer_temp);
 #elif ARDUINO_SAMD_ZERO
-  fast_samd21_tc3_configure(2000000);  // blink every 1min sec
-  fast_samd21_tc4_tc5_configure(120000000);
-  
+  fast_samd21_tc4_tc5_configure(2000000); // every 2 sec blink
+
   // enable MCU flashing by e12-node
   // you can do other fancy things like need for physically pressing
   // a button etc.
