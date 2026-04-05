@@ -164,8 +164,9 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
   p->msg.head.len = sizeof(e12_header_t);
   switch (cmd) {
     case e12_cmd_t::CMD_PING: {
-      p->msg.head.len += strlen(STR_PING) + 1;
-      memcpy(p->msg.data, STR_PING, p->msg.head.len);
+      size_t string_len = strlen(STR_PING) + 1;
+      p->msg.head.len += string_len;
+      memcpy(p->msg.data, STR_PING, string_len);
     } break;
     case e12_cmd_t::CMD_DEBUG_BLINK: {
       e12_debug_blink_t* blink = (e12_debug_blink_t*)data;
