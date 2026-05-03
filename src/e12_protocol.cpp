@@ -184,7 +184,7 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     case e12_cmd_t::CMD_LOG: {
       e12_log_evt_t* log = (e12_log_evt_t*)data;
       p->msg.head.len += sizeof(e12_log_evt_t);
-      memcpy(p->msg.data, data, p->msg.head.len);
+      memcpy(p->msg.data, data, sizeof(e12_log_evt_t));
     } break;
     case e12_cmd_t::CMD_NODE_SLEEP: {
       p->msg_sleep.ms = *(uint32_t*)data;
@@ -198,7 +198,7 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
     case e12_cmd_t::CMD_AUTH: {
       e12_auth_data_t* auth = (e12_auth_data_t*)data;
       p->msg.head.len += sizeof(e12_auth_data_t);
-      memcpy(p->msg.data, data, p->msg.head.len);
+      memcpy(p->msg.data, data, sizeof(e12_auth_data_t));
     } break;
     case e12_cmd_t::CMD_STATE: {
       e12_data_t* s = (e12_data_t*)p->msg.data;
@@ -219,6 +219,7 @@ e12_packet_t* e12::get_request(e12_cmd_t cmd, bool response, void* data) {
       }
     } break;
     case e12_cmd_t::CMD_OTA: {
+      // TODO: this is for testing, we should get rid of this
       p->msg_ota.release_type = (uint32_t)e12_release_t::STABLE;
       // example: set the version to e.g f7f66fa_1761208916_main.bin
       // size : 1143296 bytes
