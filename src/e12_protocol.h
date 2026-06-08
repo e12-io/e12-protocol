@@ -560,17 +560,29 @@ class e12 {
 
   /**
    * @brief Sets the pin as input and type (analog/digital)
-   * @param pin_number
-   * @param is_analog (true = analog, false = digital)
+   * @param pin_number (pin numbers 0-15 are digital and 16-31 are analog)
    */
-  bool set_pin_in(uint8_t pin_number, bool is_analog = false);
+  bool set_pin_in(uint8_t pin_number);
 
   /**
    * @brief Sets the pin as output and type (analog/digital)
-   * @param pin_number
-   * @param is_analog (true = analog, false = digital)
+   * @param pin_number (pin numbers 0-15 are digital and 16-31 are analog)
    */
-  bool set_pin_out(uint8_t pin_number, bool is_analog = false);
+  bool set_pin_out(uint8_t pin_number);
+
+  /**
+   * @brief read the value of the pin
+   * @param pin_number
+   * @return -1 if err
+   */
+  int32_t read_pin(uint8_t pin_number);
+
+  /**
+   * @brief write the value to the pin
+   * @param pin_number
+   * @return false if err
+   */
+  bool write_pin(uint8_t pin_number, uint16_t val);
 
   /**
    * @brief Sets the properties of the e12 node.
